@@ -1,0 +1,314 @@
+---
+title: Architecture
+description: Deep dive into ZAP Protocol's architecture and design principles
+---
+
+# Architecture
+
+ZAP Protocol is built on a layered architecture that separates concerns and allows flexibility at each level.
+
+## Layer Overview
+
+```
+┌─────────────────────────────────────────────────┐
+│                 Application Layer               │
+│           (Generated Clients/Servers)           │
+├─────────────────────────────────────────────────┤
+│                  Gateway Layer                  │
+│              (HTTP/REST/WebSocket)              │
+├─────────────────────────────────────────────────┤
+│                 Consensus Layer                 │
+│                (Optional BFT)                   │
+├─────────────────────────────────────────────────┤
+│                  Protocol Layer                 │
+│                 (Cap'n Proto)                   │
+├─────────────────────────────────────────────────┤
+│                 Transport Layer                 │
+│           (TCP/UDP/Unix/WebSocket)              │
+└─────────────────────────────────────────────────┘
+```
+
+## Transport Layer
+
+The transport layer provides the raw byte stream abstraction. ZAP supports multiple transports with a unified interface.
+
+### Transport Interface
+
+```go
+type Transport interface {
+    // Dial connects to a remote endpoint
+    Dial(ctx context.Context, addr string) (Connection, error)
+
+    // Listen starts accepting connections
+    Listen(addr string) (Listener, error)
+}
+
+type Connection interface {
+    // Send transmits a message
+    Send(ctx context.Context, msg []byte) error
+
+    // Recv receives a message
+    Recv(ctx context.Context) ([]byte, error)
+
+    // Close terminates the connection
+    Close() error
+}
+```
+
+### Available Transports
+
+| Transport | Protocol | Best For |
+|-----------|----------|----------|
+| `tcp://` | TCP | General purpose, reliable |
+| `udp://` | UDP | Telemetry, fire-and-forget |
+| `unix://` | Unix Socket | Local IPC, lowest latency |
+| `ws://` | WebSocket | Browser clients |
+
+### Connection Pooling
+
+ZAP automatically pools connections for efficiency:
+
+```go
+client, _ := zap.Dial("tcp://localhost:9000",
+    zap.WithPoolSize(10),        // Max connections
+    zap.WithIdleTimeout(30*time.Second),
+)
+```
+
+## Protocol Layer
+
+The protocol layer handles message serialization using Cap'n Proto.
+
+### Message Format
+
+ZAP messages consist of a header and body:
+
+```
+┌────────────────────────────────────────┐
+│ Header (16 bytes)                      │
+├────────────┬───────────┬───────────────┤
+│ Message ID │ Method ID │ Flags         │
+│ (8 bytes)  │ (4 bytes) │ (4 bytes)     │
+├────────────┴───────────┴───────────────┤
+│ Body (Cap'n Proto message)             │
+│ (variable length)                      │
+└────────────────────────────────────────┘
+```
+
+### Flags
+
+| Flag | Bit | Description |
+|------|-----|-------------|
+| `STREAM_START` | 0 | First message in stream |
+| `STREAM_END` | 1 | Last message in stream |
+| `ERROR` | 2 | Message contains error |
+| `COMPRESSED` | 3 | Body is compressed |
+
+### Zero-Copy Access
+
+Cap'n Proto enables zero-copy access to message fields:
+
+```go
+// Traditional approach (copies data)
+type Person struct {
+    Name string
+    Age  int32
+}
+person := &Person{}
+json.Unmarshal(data, person)
+
+// ZAP approach (zero-copy)
+msg := capnp.Message(data)
+person := gen.PersonFromMessage(msg)
+name := person.Name()  // Direct pointer into buffer
+age := person.Age()    // Direct read from buffer
+```
+
+## Consensus Layer
+
+The optional consensus layer provides Byzantine fault tolerance for distributed deployments.
+
+### BFT Configuration
+
+```go
+server := zap.NewServer(
+    zap.WithConsensus(zap.BFT{
+        // Node addresses for the consensus cluster
+        Nodes: []string{
+            "node1:9000",
+            "node2:9000",
+            "node3:9000",
+            "node4:9000",
+        },
+        // Minimum nodes for agreement (must be > 2f for f faults)
+        Threshold: 3,
+        // Timeout for consensus rounds
+        RoundTimeout: 500 * time.Millisecond,
+    }),
+)
+```
+
+### Consensus Flow
+
+```
+Client                  Leader                 Replicas
+   │                      │                       │
+   │─── Request ─────────▶│                       │
+   │                      │─── Pre-prepare ──────▶│
+   │                      │◀── Prepare ──────────│
+   │                      │─── Prepare ─────────▶│
+   │                      │◀── Commit ───────────│
+   │                      │─── Commit ──────────▶│
+   │◀── Response ─────────│                       │
+```
+
+### Fault Tolerance
+
+With `n = 3f + 1` nodes, ZAP tolerates `f` Byzantine failures:
+
+| Nodes | Tolerates | Threshold |
+|-------|-----------|-----------|
+| 4 | 1 failure | 3 |
+| 7 | 2 failures | 5 |
+| 10 | 3 failures | 7 |
+
+## Gateway Layer
+
+The gateway layer exposes ZAP services via HTTP for browser and REST clients.
+
+### Gateway Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                   HTTP Gateway                  │
+├─────────────┬─────────────┬─────────────────────┤
+│   REST API  │  WebSocket  │  Server-Sent Events │
+├─────────────┴─────────────┴─────────────────────┤
+│              JSON Transcoding                   │
+├─────────────────────────────────────────────────┤
+│              ZAP Protocol                       │
+└─────────────────────────────────────────────────┘
+```
+
+### Automatic Mapping
+
+ZAP automatically maps RPC methods to HTTP endpoints:
+
+| RPC Method | HTTP Endpoint |
+|------------|---------------|
+| `Calculator.Add` | `POST /Calculator/Add` |
+| `Calculator.Sum` | `POST /Calculator/Sum` |
+
+Custom mappings via annotations:
+
+```capnp
+interface Calculator {
+  add @0 (a :Float64, b :Float64) -> (result :Float64)
+      $http(method = "GET", path = "/calc/add");
+}
+```
+
+## Application Layer
+
+The application layer consists of generated code and your service implementation.
+
+### Generated Server Interface
+
+```go
+// Generated interface
+type CalculatorServer interface {
+    Add(ctx context.Context, a, b float64) (float64, error)
+    Subtract(ctx context.Context, a, b float64) (float64, error)
+}
+
+// Your implementation
+type myCalculator struct{}
+
+func (c *myCalculator) Add(ctx context.Context, a, b float64) (float64, error) {
+    return a + b, nil
+}
+```
+
+### Generated Client
+
+```go
+// Generated client with type-safe methods
+type CalculatorClient struct {
+    conn *zap.Connection
+}
+
+func (c *CalculatorClient) Add(ctx context.Context, a, b float64) (float64, error) {
+    // Handles serialization, transport, error handling
+}
+```
+
+## Request Lifecycle
+
+Complete flow of a ZAP request:
+
+```
+1. Client Application
+   │
+   ├─▶ Generated Client Stub
+   │   └─▶ Serialize to Cap'n Proto
+   │
+   ├─▶ Transport Layer
+   │   └─▶ Send over TCP/UDP/Unix/WS
+   │
+   ├─▶ Server Transport
+   │   └─▶ Receive bytes
+   │
+   ├─▶ Protocol Layer
+   │   └─▶ Parse header, locate body (zero-copy)
+   │
+   ├─▶ [Optional] Consensus Layer
+   │   └─▶ Replicate and agree
+   │
+   ├─▶ Server Stub
+   │   └─▶ Invoke handler
+   │
+   └─▶ Response (reverse path)
+```
+
+## Design Principles
+
+### 1. Explicit Over Implicit
+
+All behavior is explicit and configurable. No magic defaults that change behavior unexpectedly.
+
+### 2. Fail Fast
+
+Errors are surfaced immediately with precise messages. No silent failures or hidden retries.
+
+### 3. Minimal Allocations
+
+Memory allocation is minimized through:
+- Zero-copy serialization
+- Buffer pooling
+- Preallocated message structures
+
+### 4. Composable Middleware
+
+Cross-cutting concerns are handled via middleware:
+
+```go
+server := zap.NewServer(
+    zap.WithMiddleware(logging.Middleware()),
+    zap.WithMiddleware(metrics.Middleware()),
+    zap.WithMiddleware(tracing.Middleware()),
+)
+```
+
+### 5. Observable by Default
+
+Built-in observability hooks:
+- Prometheus metrics
+- OpenTelemetry tracing
+- Structured logging
+
+## Next Steps
+
+- [Protocol](/docs/protocol) - Cap'n Proto schema design
+- [Transports](/docs/transports) - Transport layer deep dive
+- [Gateway](/docs/gateway) - HTTP gateway configuration
+- [Consensus](/docs/consensus) - BFT consensus details

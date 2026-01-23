@@ -1,0 +1,341 @@
+---
+title: Quick Start
+description: Get started with ZAP Protocol in 5 minutes
+---
+
+# Quick Start
+
+This guide will help you build your first ZAP service in under 5 minutes.
+
+## Prerequisites
+
+- Go 1.21+ or Rust 1.75+ or Node.js 20+
+- Cap'n Proto compiler (`capnp`)
+
+## Installation
+
+<Tabs items={["Go", "Rust", "TypeScript"]}>
+<Tab value="Go">
+```bash
+# Install the ZAP CLI
+go install github.com/zap-protocol/zap/cmd/zap@latest
+
+# Install the Cap'n Proto compiler plugin
+go install github.com/zap-protocol/zap/cmd/capnp-gen-zap@latest
+```
+</Tab>
+<Tab value="Rust">
+```bash
+# Add to Cargo.toml
+cargo add zap-protocol
+
+# Install the code generator
+cargo install zap-codegen
+```
+</Tab>
+<Tab value="TypeScript">
+```bash
+# Install packages
+npm install @zap-protocol/client @zap-protocol/codegen
+
+# Or with pnpm
+pnpm add @zap-protocol/client @zap-protocol/codegen
+```
+</Tab>
+</Tabs>
+
+## Define Your Schema
+
+Create a file named `calculator.capnp`:
+
+```capnp
+@0x85150b117366d14b;
+
+interface Calculator {
+  # Basic arithmetic operations
+  add @0 (a :Float64, b :Float64) -> (result :Float64);
+  subtract @1 (a :Float64, b :Float64) -> (result :Float64);
+  multiply @2 (a :Float64, b :Float64) -> (result :Float64);
+  divide @3 (a :Float64, b :Float64) -> (result :Float64);
+
+  # Batch operations with streaming
+  sum @4 (numbers :List(Float64)) -> (total :Float64);
+}
+```
+
+## Generate Code
+
+```bash
+# Generate Go code
+zap generate calculator.capnp --lang=go --out=./gen
+
+# Generate Rust code
+zap generate calculator.capnp --lang=rust --out=./gen
+
+# Generate TypeScript code
+zap generate calculator.capnp --lang=ts --out=./gen
+```
+
+## Implement the Server
+
+<Tabs items={["Go", "Rust", "TypeScript"]}>
+<Tab value="Go">
+```go
+package main
+
+import (
+    "context"
+    "errors"
+    "log"
+
+    "github.com/zap-protocol/zap"
+    "yourmodule/gen"
+)
+
+type calculatorServer struct{}
+
+func (s *calculatorServer) Add(ctx context.Context, a, b float64) (float64, error) {
+    return a + b, nil
+}
+
+func (s *calculatorServer) Subtract(ctx context.Context, a, b float64) (float64, error) {
+    return a - b, nil
+}
+
+func (s *calculatorServer) Multiply(ctx context.Context, a, b float64) (float64, error) {
+    return a * b, nil
+}
+
+func (s *calculatorServer) Divide(ctx context.Context, a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+func (s *calculatorServer) Sum(ctx context.Context, numbers []float64) (float64, error) {
+    var total float64
+    for _, n := range numbers {
+        total += n
+    }
+    return total, nil
+}
+
+func main() {
+    server := zap.NewServer(
+        zap.WithAddress(":9000"),
+        zap.WithLogger(log.Default()),
+    )
+
+    gen.RegisterCalculatorServer(server, &calculatorServer{})
+
+    log.Println("Server listening on :9000")
+    if err := server.ListenAndServe(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+</Tab>
+<Tab value="Rust">
+```rust
+use zap_protocol::{Server, Result};
+use gen::calculator::{Calculator, CalculatorServer};
+
+struct CalculatorImpl;
+
+#[async_trait::async_trait]
+impl Calculator for CalculatorImpl {
+    async fn add(&self, a: f64, b: f64) -> Result<f64> {
+        Ok(a + b)
+    }
+
+    async fn subtract(&self, a: f64, b: f64) -> Result<f64> {
+        Ok(a - b)
+    }
+
+    async fn multiply(&self, a: f64, b: f64) -> Result<f64> {
+        Ok(a * b)
+    }
+
+    async fn divide(&self, a: f64, b: f64) -> Result<f64> {
+        if b == 0.0 {
+            return Err(zap_protocol::Error::new("division by zero"));
+        }
+        Ok(a / b)
+    }
+
+    async fn sum(&self, numbers: Vec<f64>) -> Result<f64> {
+        Ok(numbers.iter().sum())
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let server = Server::builder()
+        .register(CalculatorServer::new(CalculatorImpl))
+        .bind("[::]:9000")
+        .await?;
+
+    println!("Server listening on :9000");
+    server.serve().await
+}
+```
+</Tab>
+<Tab value="TypeScript">
+```typescript
+import { createServer } from '@zap-protocol/server';
+import { Calculator } from './gen/calculator';
+
+const calculator: Calculator = {
+  async add(a: number, b: number): Promise<number> {
+    return a + b;
+  },
+
+  async subtract(a: number, b: number): Promise<number> {
+    return a - b;
+  },
+
+  async multiply(a: number, b: number): Promise<number> {
+    return a * b;
+  },
+
+  async divide(a: number, b: number): Promise<number> {
+    if (b === 0) {
+      throw new Error('division by zero');
+    }
+    return a / b;
+  },
+
+  async sum(numbers: number[]): Promise<number> {
+    return numbers.reduce((acc, n) => acc + n, 0);
+  },
+};
+
+const server = createServer({ port: 9000 });
+server.register('Calculator', calculator);
+
+console.log('Server listening on :9000');
+server.listen();
+```
+</Tab>
+</Tabs>
+
+## Create a Client
+
+<Tabs items={["Go", "Rust", "TypeScript"]}>
+<Tab value="Go">
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/zap-protocol/zap"
+    "yourmodule/gen"
+)
+
+func main() {
+    client, err := zap.Dial("localhost:9000")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer client.Close()
+
+    calc := gen.NewCalculatorClient(client)
+
+    ctx := context.Background()
+
+    result, err := calc.Add(ctx, 10, 5)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("10 + 5 = %.0f\n", result)
+
+    result, err = calc.Multiply(ctx, 6, 7)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("6 * 7 = %.0f\n", result)
+
+    total, err := calc.Sum(ctx, []float64{1, 2, 3, 4, 5})
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("sum(1..5) = %.0f\n", total)
+}
+```
+</Tab>
+<Tab value="Rust">
+```rust
+use gen::calculator::CalculatorClient;
+use zap_protocol::Client;
+
+#[tokio::main]
+async fn main() -> zap_protocol::Result<()> {
+    let client = Client::connect("localhost:9000").await?;
+    let calc = CalculatorClient::new(client);
+
+    let result = calc.add(10.0, 5.0).await?;
+    println!("10 + 5 = {}", result);
+
+    let result = calc.multiply(6.0, 7.0).await?;
+    println!("6 * 7 = {}", result);
+
+    let total = calc.sum(vec![1.0, 2.0, 3.0, 4.0, 5.0]).await?;
+    println!("sum(1..5) = {}", total);
+
+    Ok(())
+}
+```
+</Tab>
+<Tab value="TypeScript">
+```typescript
+import { createClient } from '@zap-protocol/client';
+import { CalculatorClient } from './gen/calculator';
+
+async function main() {
+  const client = await createClient('localhost:9000');
+  const calc = new CalculatorClient(client);
+
+  const sum = await calc.add(10, 5);
+  console.log(`10 + 5 = ${sum}`);
+
+  const product = await calc.multiply(6, 7);
+  console.log(`6 * 7 = ${product}`);
+
+  const total = await calc.sum([1, 2, 3, 4, 5]);
+  console.log(`sum(1..5) = ${total}`);
+
+  client.close();
+}
+
+main();
+```
+</Tab>
+</Tabs>
+
+## Run Your Service
+
+```bash
+# Terminal 1: Start the server
+go run server.go
+# Output: Server listening on :9000
+
+# Terminal 2: Run the client
+go run client.go
+# Output:
+# 10 + 5 = 15
+# 6 * 7 = 42
+# sum(1..5) = 15
+```
+
+## Next Steps
+
+Now that you have a working ZAP service:
+
+- Learn about [Architecture](/docs/architecture) to understand the design
+- Explore [Transports](/docs/transports) for different network options
+- Set up a [Gateway](/docs/gateway) for HTTP clients
+- Add [Consensus](/docs/consensus) for distributed deployments

@@ -1,0 +1,398 @@
+---
+title: Protocol
+description: Cap'n Proto schema design and message format for ZAP Protocol
+---
+
+# Protocol
+
+ZAP uses Cap'n Proto for message serialization. This page covers schema design, best practices, and the wire format.
+
+## Cap'n Proto Basics
+
+Cap'n Proto is a data serialization format that requires no parsing. Data is laid out in memory exactly as it appears on the wire.
+
+### Why Cap'n Proto?
+
+| Feature | Benefit |
+|---------|---------|
+| Zero-copy | No parsing overhead |
+| Forward/backward compatible | Safe schema evolution |
+| Strongly typed | Compile-time safety |
+| Pointer-based | Efficient for nested structures |
+
+## Schema Definition
+
+### Basic Types
+
+Cap'n Proto provides these primitive types:
+
+```capnp
+struct Example {
+  # Integers
+  int8Val    @0 :Int8;
+  int16Val   @1 :Int16;
+  int32Val   @2 :Int32;
+  int64Val   @3 :Int64;
+  uint8Val   @4 :UInt8;
+  uint16Val  @5 :UInt16;
+  uint32Val  @6 :UInt32;
+  uint64Val  @7 :UInt64;
+
+  # Floating point
+  float32Val @8 :Float32;
+  float64Val @9 :Float64;
+
+  # Other primitives
+  boolVal    @10 :Bool;
+  textVal    @11 :Text;
+  dataVal    @12 :Data;
+}
+```
+
+### Structs
+
+Define complex types with structs:
+
+```capnp
+struct Person {
+  name     @0 :Text;
+  age      @1 :Int32;
+  email    @2 :Text;
+  address  @3 :Address;
+}
+
+struct Address {
+  street   @0 :Text;
+  city     @1 :Text;
+  country  @2 :Text;
+  zipCode  @3 :Text;
+}
+```
+
+### Lists
+
+Lists can contain any type:
+
+```capnp
+struct Order {
+  items      @0 :List(Item);
+  quantities @1 :List(Int32);
+  tags       @2 :List(Text);
+}
+```
+
+### Enums
+
+Define enumerated types:
+
+```capnp
+enum Status {
+  pending   @0;
+  active    @1;
+  completed @2;
+  cancelled @3;
+}
+
+struct Task {
+  title  @0 :Text;
+  status @1 :Status;
+}
+```
+
+### Unions
+
+Use unions for variant types:
+
+```capnp
+struct Result {
+  union {
+    success @0 :Data;
+    error   @1 :Text;
+  }
+}
+
+struct Shape {
+  union {
+    circle    @0 :Circle;
+    rectangle @1 :Rectangle;
+    triangle  @2 :Triangle;
+  }
+}
+```
+
+## Interface Definitions
+
+### Basic Interface
+
+```capnp
+@0x85150b117366d14b;
+
+interface Calculator {
+  add      @0 (a :Float64, b :Float64) -> (result :Float64);
+  subtract @1 (a :Float64, b :Float64) -> (result :Float64);
+  multiply @2 (a :Float64, b :Float64) -> (result :Float64);
+  divide   @3 (a :Float64, b :Float64) -> (result :Float64);
+}
+```
+
+### Streaming Methods
+
+Use `stream` keyword for streaming responses:
+
+```capnp
+interface DataService {
+  # Unary method
+  getData @0 (id :Text) -> (data :Data);
+
+  # Server streaming
+  streamData @1 (query :Query) -> stream (chunk :DataChunk);
+
+  # Client streaming
+  uploadData @2 stream (chunk :DataChunk) -> (status :UploadStatus);
+
+  # Bidirectional streaming
+  processStream @3 stream (input :InputChunk) -> stream (output :OutputChunk);
+}
+```
+
+### Nested Interfaces
+
+Interfaces can return other interfaces:
+
+```capnp
+interface Database {
+  openTable @0 (name :Text) -> (table :Table);
+}
+
+interface Table {
+  get    @0 (key :Data) -> (value :Data);
+  put    @1 (key :Data, value :Data) -> ();
+  delete @2 (key :Data) -> ();
+  scan   @3 (prefix :Data) -> stream (entry :Entry);
+}
+```
+
+## Schema Evolution
+
+### Adding Fields
+
+Add new fields with new ordinals:
+
+```capnp
+# Version 1
+struct User {
+  name  @0 :Text;
+  email @1 :Text;
+}
+
+# Version 2 (compatible)
+struct User {
+  name     @0 :Text;
+  email    @1 :Text;
+  phone    @2 :Text;     # New field
+  verified @3 :Bool;     # New field
+}
+```
+
+### Default Values
+
+Provide defaults for optional fields:
+
+```capnp
+struct Config {
+  timeout   @0 :UInt32 = 30;
+  retries   @1 :UInt32 = 3;
+  debugMode @2 :Bool = false;
+}
+```
+
+### Deprecation
+
+Mark fields as deprecated:
+
+```capnp
+struct User {
+  name     @0 :Text;
+  email    @1 :Text;
+  oldField @2 :Text $deprecated;  # Don't use in new code
+}
+```
+
+## Wire Format
+
+### Message Structure
+
+```
+┌─────────────────────────────────────┐
+│ Segment Table                       │
+│ ┌─────────────────────────────────┐ │
+│ │ Segment Count (4 bytes)         │ │
+│ │ Segment 0 Size (4 bytes)        │ │
+│ │ Segment 1 Size (4 bytes)        │ │
+│ │ ...                             │ │
+│ └─────────────────────────────────┘ │
+├─────────────────────────────────────┤
+│ Segment 0 Data                      │
+├─────────────────────────────────────┤
+│ Segment 1 Data                      │
+├─────────────────────────────────────┤
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+### ZAP Header
+
+ZAP adds a 16-byte header before the Cap'n Proto message:
+
+```
+┌───────────────────────────────────────────────────┐
+│ ZAP Header (16 bytes)                             │
+├─────────────┬─────────────┬───────────────────────┤
+│ Message ID  │ Method ID   │ Flags                 │
+│ (8 bytes)   │ (4 bytes)   │ (4 bytes)             │
+└─────────────┴─────────────┴───────────────────────┘
+```
+
+### Compression
+
+Enable compression for large messages:
+
+```go
+server := zap.NewServer(
+    zap.WithCompression(zap.CompressionZstd),
+    zap.WithCompressionThreshold(1024), // Compress if > 1KB
+)
+```
+
+## Code Generation
+
+### Generate Code
+
+```bash
+# Generate all languages
+zap generate schema.capnp --out=./gen
+
+# Generate specific language
+zap generate schema.capnp --lang=go --out=./gen/go
+zap generate schema.capnp --lang=rust --out=./gen/rust
+zap generate schema.capnp --lang=ts --out=./gen/ts
+```
+
+### Generated Types
+
+For this schema:
+
+```capnp
+struct Person {
+  name @0 :Text;
+  age  @1 :Int32;
+}
+```
+
+Go generates:
+
+```go
+type Person struct {
+    capnp.Struct
+}
+
+func (p Person) Name() (string, error)
+func (p Person) SetName(v string) error
+func (p Person) Age() int32
+func (p Person) SetAge(v int32)
+```
+
+Rust generates:
+
+```rust
+pub struct Person<'a> {
+    reader: capnp::struct_list::Reader<'a>,
+}
+
+impl<'a> Person<'a> {
+    pub fn get_name(&self) -> capnp::Result<&'a str>;
+    pub fn get_age(&self) -> i32;
+}
+```
+
+## Best Practices
+
+### 1. Use Meaningful Field Numbers
+
+Field numbers are permanent. Plan for future expansion:
+
+```capnp
+struct User {
+  # Core fields: 0-9
+  id    @0 :UInt64;
+  name  @1 :Text;
+  email @2 :Text;
+
+  # Profile fields: 10-19
+  avatar @10 :Data;
+  bio    @11 :Text;
+
+  # Settings: 20-29
+  theme     @20 :Text;
+  language  @21 :Text;
+}
+```
+
+### 2. Prefer Structs Over Lists of Primitives
+
+```capnp
+# Avoid
+struct Point {
+  coords @0 :List(Float64);  # What do indices mean?
+}
+
+# Prefer
+struct Point {
+  x @0 :Float64;
+  y @1 :Float64;
+  z @2 :Float64;
+}
+```
+
+### 3. Use Groups for Logical Organization
+
+```capnp
+struct Employee {
+  name @0 :Text;
+
+  contact :group {
+    email @1 :Text;
+    phone @2 :Text;
+  }
+
+  employment :group {
+    title      @3 :Text;
+    department @4 :Text;
+    startDate  @5 :UInt64;
+  }
+}
+```
+
+### 4. Document Your Schema
+
+```capnp
+# User represents a registered user in the system.
+# Users are created via the Registration service and
+# authenticated via the Auth service.
+struct User {
+  # Unique identifier, assigned by the system
+  id @0 :UInt64;
+
+  # Display name, must be 1-100 characters
+  name @1 :Text;
+
+  # Email address, must be unique across all users
+  email @2 :Text;
+}
+```
+
+## Next Steps
+
+- [Transports](/docs/transports) - Network transport options
+- [Gateway](/docs/gateway) - HTTP/REST gateway
+- [API Reference](/docs/api) - Complete API documentation

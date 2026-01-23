@@ -1,0 +1,101 @@
+---
+title: Introduction
+description: Welcome to ZAP Protocol - Zero-latency Asynchronous Protocol for high-performance distributed systems
+---
+
+# ZAP Protocol
+
+**ZAP** (Zero-latency Asynchronous Protocol) is a high-performance RPC framework designed for building distributed systems with minimal latency and maximum throughput.
+
+## What is ZAP?
+
+ZAP combines several powerful technologies into a cohesive framework:
+
+- **Cap'n Proto Serialization**: Zero-copy message format with no parsing overhead
+- **Multiple Transport Layers**: TCP, UDP, Unix sockets, and WebSocket support
+- **Async-First Design**: Built for modern async runtimes from the ground up
+- **Byzantine Consensus**: Optional BFT layer for distributed agreement
+- **Code Generation**: Type-safe stubs for Go, Rust, and TypeScript
+
+## Key Benefits
+
+### Performance
+
+ZAP achieves exceptional performance through:
+
+1. **Zero-copy deserialization** - Messages are directly accessible from the wire without parsing
+2. **Connection pooling** - Automatic connection management with keep-alive
+3. **Batching** - Automatic request batching for improved throughput
+4. **Streaming** - First-class support for bidirectional streaming
+
+### Reliability
+
+Built-in features for production systems:
+
+- Automatic retries with exponential backoff
+- Circuit breaker pattern implementation
+- Graceful degradation under load
+- Comprehensive observability hooks
+
+### Developer Experience
+
+- Schema-first design with code generation
+- Type-safe APIs across all supported languages
+- Comprehensive error handling with structured errors
+- Extensive documentation and examples
+
+## Quick Example
+
+Define your service schema:
+
+```capnp
+@0xa1b2c3d4e5f6a7b8;
+
+interface Greeter {
+  sayHello @0 (name :Text) -> (message :Text);
+  streamGreetings @1 (names :List(Text)) -> stream (message :Text);
+}
+```
+
+Generate and implement your server (Go):
+
+```go
+type greeterServer struct{}
+
+func (s *greeterServer) SayHello(ctx context.Context, name string) (string, error) {
+    return fmt.Sprintf("Hello, %s!", name), nil
+}
+
+func main() {
+    server := zap.NewServer()
+    server.Register(&greeterServer{})
+    server.ListenAndServe(":9000")
+}
+```
+
+Use the generated client:
+
+```go
+client, _ := zap.Dial("localhost:9000")
+defer client.Close()
+
+resp, _ := client.Greeter().SayHello(ctx, "World")
+fmt.Println(resp) // "Hello, World!"
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Quick Start" href="/docs/quick-start">
+    Get up and running in 5 minutes
+  </Card>
+  <Card title="Architecture" href="/docs/architecture">
+    Understand ZAP's design principles
+  </Card>
+  <Card title="Why ZAP?" href="/docs/why-zap">
+    Compare ZAP with alternatives
+  </Card>
+  <Card title="API Reference" href="/docs/api">
+    Complete API documentation
+  </Card>
+</Cards>

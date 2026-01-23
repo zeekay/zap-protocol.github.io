@@ -1,0 +1,16 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "quick-start",
+    "why-zap",
+    "---Core Concepts---",
+    "architecture",
+    "protocol",
+    "transports",
+    "gateway",
+    "consensus",
+    "---Reference---",
+    "api"
+  ]
+}
