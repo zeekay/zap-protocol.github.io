@@ -1,0 +1,553 @@
+---
+title: API Reference
+description: Complete API documentation for ZAP Protocol
+---
+
+# API Reference
+
+Complete reference for ZAP Protocol's public APIs.
+
+## Server API
+
+### NewServer
+
+Creates a new ZAP server instance.
+
+```go
+func NewServer(opts ...ServerOption) *Server
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `WithAddress(addr string)` | Listen address (default: `:9000`) |
+| `WithTransport(t Transport)` | Transport type (TCP, UDP, Unix, WebSocket) |
+| `WithTLS(config TLSConfig)` | Enable TLS with configuration |
+| `WithConsensus(config BFT)` | Enable BFT consensus |
+| `WithLogger(logger Logger)` | Custom logger |
+| `WithMiddleware(m Middleware)` | Add middleware |
+
+**Example:**
+
+```go
+server := zap.NewServer(
+    zap.WithAddress(":9000"),
+    zap.WithTLS(zap.TLSConfig{
+        CertFile: "cert.pem",
+        KeyFile:  "key.pem",
+    }),
+)
+```
+
+### Server.Register
+
+Registers a service implementation.
+
+```go
+func (s *Server) Register(service interface{}, opts ...RegisterOption) error
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `WithReplicated(methods ...string)` | Methods requiring consensus |
+| `WithReadOnly(methods ...string)` | Read-only methods |
+| `WithInterceptor(i Interceptor)` | Per-service interceptor |
+
+**Example:**
+
+```go
+server.Register(&myService{},
+    zap.WithReplicated("Write", "Delete"),
+    zap.WithReadOnly("Read", "List"),
+)
+```
+
+### Server.ListenAndServe
+
+Starts the server and blocks until shutdown.
+
+```go
+func (s *Server) ListenAndServe() error
+```
+
+### Server.Shutdown
+
+Gracefully shuts down the server.
+
+```go
+func (s *Server) Shutdown(ctx context.Context) error
+```
+
+**Example:**
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+
+if err := server.Shutdown(ctx); err != nil {
+    log.Printf("Shutdown error: %v", err)
+}
+```
+
+## Client API
+
+### Dial
+
+Creates a connection to a ZAP server.
+
+```go
+func Dial(addr string, opts ...DialOption) (*Connection, error)
+```
+
+**Address Formats:**
+
+| Format | Transport |
+|--------|-----------|
+| `tcp://host:port` | TCP |
+| `tls://host:port` | TCP with TLS |
+| `udp://host:port` | UDP |
+| `unix:///path` | Unix socket |
+| `ws://host:port/path` | WebSocket |
+| `wss://host:port/path` | WebSocket with TLS |
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `WithConnectTimeout(d time.Duration)` | Connection timeout |
+| `WithPoolSize(n int)` | Connection pool size |
+| `WithTLSConfig(c *tls.Config)` | TLS configuration |
+| `WithRetry(config RetryConfig)` | Retry configuration |
+
+**Example:**
+
+```go
+client, err := zap.Dial("tcp://localhost:9000",
+    zap.WithConnectTimeout(5*time.Second),
+    zap.WithPoolSize(10),
+)
+if err != nil {
+    log.Fatal(err)
+}
+defer client.Close()
+```
+
+### Connection.Call
+
+Makes a unary RPC call.
+
+```go
+func (c *Connection) Call(ctx context.Context, method string, req, resp interface{}) error
+```
+
+**Example:**
+
+```go
+var result float64
+err := client.Call(ctx, "Calculator.Add", &AddRequest{A: 1, B: 2}, &result)
+```
+
+### Connection.Stream
+
+Opens a bidirectional stream.
+
+```go
+func (c *Connection) Stream(ctx context.Context, method string) (Stream, error)
+```
+
+**Example:**
+
+```go
+stream, err := client.Stream(ctx, "Chat.Connect")
+if err != nil {
+    return err
+}
+defer stream.Close()
+
+// Send
+stream.Send(&Message{Text: "Hello"})
+
+// Receive
+var msg Message
+stream.Recv(&msg)
+```
+
+### Connection.Close
+
+Closes the connection and releases resources.
+
+```go
+func (c *Connection) Close() error
+```
+
+## Gateway API
+
+### NewGateway
+
+Creates an HTTP gateway for a ZAP server.
+
+```go
+func NewGateway(server *Server, opts ...GatewayOption) *Gateway
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `WithGatewayAddress(addr string)` | HTTP listen address |
+| `WithCORS(config CORSConfig)` | CORS configuration |
+| `WithAuth(auth Authenticator)` | Authentication |
+| `WithRateLimit(config RateLimitConfig)` | Rate limiting |
+
+**Example:**
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithGatewayAddress(":8080"),
+    zap.WithCORS(zap.CORSConfig{
+        AllowedOrigins: []string{"*"},
+    }),
+)
+```
+
+### Gateway.ListenAndServe
+
+Starts the HTTP gateway.
+
+```go
+func (g *Gateway) ListenAndServe() error
+```
+
+### Gateway.Handler
+
+Returns the HTTP handler for custom integration.
+
+```go
+func (g *Gateway) Handler() http.Handler
+```
+
+**Example:**
+
+```go
+// Use with existing HTTP server
+mux := http.NewServeMux()
+mux.Handle("/rpc/", gateway.Handler())
+mux.Handle("/static/", staticHandler)
+http.ListenAndServe(":8080", mux)
+```
+
+## Consensus API
+
+### BFT Configuration
+
+```go
+type BFT struct {
+    NodeID          string
+    Nodes           []string
+    Threshold       int
+    RoundTimeout    time.Duration
+    ElectionTimeout time.Duration
+    BatchSize       int
+    BatchTimeout    time.Duration
+    WAL             WALConfig
+    Snapshot        SnapshotConfig
+    ReadStrategy    ReadStrategy
+    LeaderElection  LeaderElection
+    StateMachine    StateMachine
+}
+```
+
+### StateMachine Interface
+
+```go
+type StateMachine interface {
+    // Apply executes a replicated operation
+    Apply(op []byte) ([]byte, error)
+
+    // Snapshot returns the current state
+    Snapshot() ([]byte, error)
+
+    // Restore restores state from a snapshot
+    Restore(snapshot []byte) error
+}
+```
+
+### AdminClient
+
+Administration client for consensus clusters.
+
+```go
+type AdminClient struct {
+    conn *Connection
+}
+
+func NewAdminClient(conn *Connection) *AdminClient
+```
+
+**Methods:**
+
+```go
+// AddNode adds a new node to the cluster
+func (a *AdminClient) AddNode(ctx context.Context, addr string) error
+
+// RemoveNode removes a node from the cluster
+func (a *AdminClient) RemoveNode(ctx context.Context, addr string) error
+
+// ListMembers returns all cluster members
+func (a *AdminClient) ListMembers(ctx context.Context) ([]Member, error)
+
+// GetHealth returns cluster health status
+func (a *AdminClient) GetHealth(ctx context.Context) (*Health, error)
+
+// GetLeader returns the current leader
+func (a *AdminClient) GetLeader(ctx context.Context) (string, error)
+```
+
+## Error Types
+
+### Error
+
+Base error type for ZAP errors.
+
+```go
+type Error struct {
+    Code    ErrorCode
+    Message string
+    Details map[string]interface{}
+}
+```
+
+### Error Codes
+
+| Code | Description |
+|------|-------------|
+| `OK` | Success |
+| `Cancelled` | Operation cancelled |
+| `Unknown` | Unknown error |
+| `InvalidArgument` | Invalid argument |
+| `DeadlineExceeded` | Timeout |
+| `NotFound` | Resource not found |
+| `AlreadyExists` | Resource already exists |
+| `PermissionDenied` | Permission denied |
+| `ResourceExhausted` | Rate limit exceeded |
+| `FailedPrecondition` | Precondition failed |
+| `Aborted` | Operation aborted |
+| `OutOfRange` | Out of range |
+| `Unimplemented` | Not implemented |
+| `Internal` | Internal error |
+| `Unavailable` | Service unavailable |
+| `DataLoss` | Data loss |
+| `Unauthenticated` | Not authenticated |
+
+### Error Helpers
+
+```go
+// Create errors
+zap.NewError(zap.NotFound, "user not found")
+zap.NewErrorf(zap.InvalidArgument, "invalid id: %s", id)
+
+// Check error codes
+if zap.Code(err) == zap.NotFound {
+    // Handle not found
+}
+
+// Wrap errors
+zap.WrapError(err, zap.Internal, "database error")
+```
+
+## Middleware
+
+### Middleware Interface
+
+```go
+type Middleware func(Handler) Handler
+
+type Handler func(ctx context.Context, req interface{}) (interface{}, error)
+```
+
+### Built-in Middleware
+
+```go
+// Logging
+zap.LoggingMiddleware(logger)
+
+// Metrics
+zap.MetricsMiddleware(zap.MetricsConfig{
+    Namespace: "app",
+    Subsystem: "rpc",
+})
+
+// Tracing
+zap.TracingMiddleware(tracer)
+
+// Recovery
+zap.RecoveryMiddleware(func(err interface{}) {
+    log.Printf("Panic recovered: %v", err)
+})
+
+// Timeout
+zap.TimeoutMiddleware(30 * time.Second)
+
+// Retry
+zap.RetryMiddleware(zap.RetryConfig{
+    MaxRetries:  3,
+    InitialWait: 100 * time.Millisecond,
+    MaxWait:     5 * time.Second,
+})
+```
+
+## Context Values
+
+### Request Metadata
+
+```go
+// Get client address
+addr := zap.ClientAddr(ctx)
+
+// Get request ID
+reqID := zap.RequestID(ctx)
+
+// Get authenticated user
+user := zap.AuthenticatedUser(ctx)
+```
+
+### Setting Metadata
+
+```go
+// Set deadline
+ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+defer cancel()
+
+// Set request ID
+ctx = zap.WithRequestID(ctx, "req-123")
+
+// Set authenticated user
+ctx = zap.WithUser(ctx, user)
+```
+
+## Metrics
+
+### Available Metrics
+
+```
+# Request metrics
+zap_requests_total{method="Add",code="OK"}
+zap_request_duration_seconds{method="Add",quantile="0.99"}
+
+# Connection metrics
+zap_connections_active
+zap_connections_total
+
+# Consensus metrics
+zap_consensus_latency_seconds{phase="commit"}
+zap_consensus_operations_total
+
+# Transport metrics
+zap_transport_bytes_sent_total
+zap_transport_bytes_received_total
+```
+
+### Custom Metrics
+
+```go
+server := zap.NewServer(
+    zap.WithMetrics(zap.MetricsConfig{
+        Registry:    prometheus.DefaultRegisterer,
+        Namespace:   "myapp",
+        Subsystem:   "zap",
+        Buckets:     prometheus.DefBuckets,
+    }),
+)
+```
+
+## CLI Reference
+
+### zap generate
+
+Generate code from Cap'n Proto schemas.
+
+```bash
+zap generate [options] <schema.capnp>
+
+Options:
+  --lang string     Target language (go, rust, ts)
+  --out string      Output directory
+  --package string  Package name (Go only)
+  --module string   Module path (Go only)
+```
+
+### zap serve
+
+Start a development server.
+
+```bash
+zap serve [options]
+
+Options:
+  --addr string     Listen address (default ":9000")
+  --config string   Configuration file
+  --debug           Enable debug logging
+```
+
+### zap openapi
+
+Generate OpenAPI specification.
+
+```bash
+zap openapi [options] <schema.capnp>
+
+Options:
+  --out string      Output file (default "openapi.yaml")
+  --format string   Output format (yaml, json)
+  --version string  API version
+```
+
+## Configuration File
+
+### YAML Format
+
+```yaml
+server:
+  address: ":9000"
+  transport: tcp
+  tls:
+    cert_file: /path/to/cert.pem
+    key_file: /path/to/key.pem
+
+gateway:
+  address: ":8080"
+  cors:
+    allowed_origins:
+      - https://app.example.com
+
+consensus:
+  node_id: node1
+  nodes:
+    - node1:9000
+    - node2:9000
+    - node3:9000
+  threshold: 2
+  wal_path: /var/lib/zap/wal
+
+logging:
+  level: info
+  format: json
+
+metrics:
+  enabled: true
+  address: ":9090"
+```
+
+### Loading Configuration
+
+```go
+config, err := zap.LoadConfig("config.yaml")
+if err != nil {
+    log.Fatal(err)
+}
+
+server := zap.NewServerFromConfig(config)
+```

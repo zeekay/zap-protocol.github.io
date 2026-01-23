@@ -1,0 +1,427 @@
+---
+title: Gateway
+description: HTTP/REST gateway for exposing ZAP services to web clients
+---
+
+# Gateway
+
+The ZAP Gateway provides HTTP/REST access to ZAP services, enabling browser clients and legacy systems to interact with your services.
+
+## Overview
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   HTTP Clients                      │
+│            (Browsers, REST clients)                 │
+└───────────────────────┬─────────────────────────────┘
+                        │ HTTP/JSON
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│                   ZAP Gateway                       │
+│  ┌─────────────┐ ┌─────────────┐ ┌───────────────┐  │
+│  │ REST Router │ │ WebSocket   │ │ SSE Handler   │  │
+│  └─────────────┘ └─────────────┘ └───────────────┘  │
+│  ┌─────────────────────────────────────────────────┐│
+│  │           JSON <-> Cap'n Proto Transcoder       ││
+│  └─────────────────────────────────────────────────┘│
+└───────────────────────┬─────────────────────────────┘
+                        │ ZAP Protocol
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│                   ZAP Services                      │
+└─────────────────────────────────────────────────────┘
+```
+
+## Quick Start
+
+### Enable Gateway
+
+```go
+server := zap.NewServer(
+    zap.WithAddress(":9000"),
+)
+
+// Add HTTP gateway on port 8080
+gateway := zap.NewGateway(server,
+    zap.WithGatewayAddress(":8080"),
+)
+
+// Start both
+go server.ListenAndServe()
+gateway.ListenAndServe()
+```
+
+### Automatic Endpoint Mapping
+
+ZAP automatically maps RPC methods to HTTP endpoints:
+
+| RPC Method | HTTP Method | Path |
+|------------|-------------|------|
+| `Service.Method` | POST | `/Service/Method` |
+| `Calculator.Add` | POST | `/Calculator/Add` |
+| `Users.GetUser` | POST | `/Users/GetUser` |
+
+### Making Requests
+
+```bash
+# Call Calculator.Add
+curl -X POST http://localhost:8080/Calculator/Add \
+  -H "Content-Type: application/json" \
+  -d '{"a": 10, "b": 5}'
+
+# Response
+{"result": 15}
+```
+
+## Custom Routing
+
+### HTTP Annotations
+
+Define custom routes in your schema:
+
+```capnp
+interface Calculator {
+  add @0 (a :Float64, b :Float64) -> (result :Float64)
+      $http(method = "GET", path = "/calc/add");
+
+  subtract @1 (a :Float64, b :Float64) -> (result :Float64)
+      $http(method = "GET", path = "/calc/subtract");
+}
+
+interface Users {
+  getUser @0 (id :Text) -> (user :User)
+      $http(method = "GET", path = "/users/{id}");
+
+  createUser @1 (user :User) -> (id :Text)
+      $http(method = "POST", path = "/users");
+
+  deleteUser @2 (id :Text) -> ()
+      $http(method = "DELETE", path = "/users/{id}");
+}
+```
+
+### Programmatic Routes
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithRoute("GET", "/health", healthHandler),
+    zap.WithRoute("GET", "/api/v1/calc/add", addHandler),
+)
+```
+
+### Path Parameters
+
+Extract parameters from the URL path:
+
+```capnp
+interface Users {
+  getUser @0 (id :Text) -> (user :User)
+      $http(method = "GET", path = "/users/{id}");
+
+  getPost @1 (userId :Text, postId :Text) -> (post :Post)
+      $http(method = "GET", path = "/users/{userId}/posts/{postId}");
+}
+```
+
+### Query Parameters
+
+Map query parameters to method arguments:
+
+```capnp
+interface Search {
+  search @0 (query :Text, limit :UInt32, offset :UInt32) -> (results :List(Result))
+      $http(
+        method = "GET",
+        path = "/search",
+        query = ["query", "limit", "offset"]
+      );
+}
+```
+
+Usage:
+```bash
+curl "http://localhost:8080/search?query=hello&limit=10&offset=0"
+```
+
+## JSON Transcoding
+
+### Automatic Conversion
+
+ZAP automatically converts between JSON and Cap'n Proto:
+
+| Cap'n Proto Type | JSON Type |
+|------------------|-----------|
+| Bool | boolean |
+| Int8-Int64 | number |
+| UInt8-UInt64 | number |
+| Float32, Float64 | number |
+| Text | string |
+| Data | base64 string |
+| List | array |
+| Struct | object |
+| Enum | string |
+
+### Example Conversions
+
+Cap'n Proto struct:
+```capnp
+struct User {
+  id    @0 :UInt64;
+  name  @1 :Text;
+  email @2 :Text;
+  roles @3 :List(Text);
+}
+```
+
+JSON representation:
+```json
+{
+  "id": 12345,
+  "name": "Alice",
+  "email": "alice@example.com",
+  "roles": ["admin", "user"]
+}
+```
+
+### Custom Field Names
+
+Use annotations for JSON field names:
+
+```capnp
+struct User {
+  id        @0 :UInt64 $json(name = "user_id");
+  firstName @1 :Text   $json(name = "first_name");
+  lastName  @2 :Text   $json(name = "last_name");
+}
+```
+
+## Streaming
+
+### Server-Sent Events (SSE)
+
+For streaming responses, use SSE:
+
+```capnp
+interface Feed {
+  subscribe @0 (topic :Text) -> stream (event :Event)
+      $http(method = "GET", path = "/feed/{topic}", stream = "sse");
+}
+```
+
+Client usage:
+```javascript
+const eventSource = new EventSource('/feed/updates');
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received:', data);
+};
+```
+
+### WebSocket
+
+For bidirectional streaming:
+
+```capnp
+interface Chat {
+  connect @0 stream (message :Message) -> stream (message :Message)
+      $http(path = "/chat", stream = "websocket");
+}
+```
+
+Client usage:
+```javascript
+const ws = new WebSocket('ws://localhost:8080/chat');
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Received:', message);
+};
+
+ws.send(JSON.stringify({ text: 'Hello!' }));
+```
+
+## Authentication
+
+### Bearer Token
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithAuth(zap.BearerAuth{
+        Validator: func(token string) (context.Context, error) {
+            claims, err := validateJWT(token)
+            if err != nil {
+                return nil, err
+            }
+            return context.WithValue(ctx, "user", claims.UserID), nil
+        },
+    }),
+)
+```
+
+### API Key
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithAuth(zap.APIKeyAuth{
+        Header: "X-API-Key",
+        Validator: func(key string) (context.Context, error) {
+            if !isValidAPIKey(key) {
+                return nil, zap.ErrUnauthorized
+            }
+            return ctx, nil
+        },
+    }),
+)
+```
+
+### Custom Authentication
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithAuthMiddleware(func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            // Custom auth logic
+            if !authorized(r) {
+                http.Error(w, "Unauthorized", 401)
+                return
+            }
+            next.ServeHTTP(w, r)
+        })
+    }),
+)
+```
+
+## CORS Configuration
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithCORS(zap.CORSConfig{
+        AllowedOrigins: []string{
+            "https://app.example.com",
+            "https://dashboard.example.com",
+        },
+        AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+        AllowedHeaders: []string{"Authorization", "Content-Type"},
+        MaxAge:         86400,
+    }),
+)
+```
+
+## Rate Limiting
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithRateLimit(zap.RateLimitConfig{
+        RequestsPerSecond: 100,
+        Burst:             200,
+        KeyFunc: func(r *http.Request) string {
+            return r.Header.Get("X-API-Key")
+        },
+    }),
+)
+```
+
+## Error Handling
+
+### Standard Error Format
+
+ZAP Gateway returns errors in a consistent format:
+
+```json
+{
+  "error": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Parameter 'id' is required",
+    "details": {
+      "field": "id",
+      "constraint": "required"
+    }
+  }
+}
+```
+
+### HTTP Status Codes
+
+| ZAP Error | HTTP Status |
+|-----------|-------------|
+| `NotFound` | 404 |
+| `InvalidArgument` | 400 |
+| `PermissionDenied` | 403 |
+| `Unauthenticated` | 401 |
+| `ResourceExhausted` | 429 |
+| `Internal` | 500 |
+| `Unavailable` | 503 |
+
+### Custom Error Mapping
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithErrorMapper(func(err error) (int, interface{}) {
+        if errors.Is(err, ErrCustomError) {
+            return 422, map[string]string{
+                "error": "custom_error",
+                "message": err.Error(),
+            }
+        }
+        return 0, nil // Use default mapping
+    }),
+)
+```
+
+## Middleware
+
+### Logging
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithMiddleware(zap.LoggingMiddleware(logger)),
+)
+```
+
+### Metrics
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithMiddleware(zap.MetricsMiddleware(zap.MetricsConfig{
+        Namespace: "myapp",
+        Subsystem: "gateway",
+    })),
+)
+```
+
+### Custom Middleware
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithMiddleware(func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            start := time.Now()
+            next.ServeHTTP(w, r)
+            log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
+        })
+    }),
+)
+```
+
+## OpenAPI Generation
+
+Generate OpenAPI spec from your schema:
+
+```bash
+zap openapi service.capnp --out=openapi.yaml
+```
+
+Serve the spec:
+
+```go
+gateway := zap.NewGateway(server,
+    zap.WithOpenAPI("/openapi.yaml"),
+    zap.WithSwaggerUI("/docs"),
+)
+```
+
+## Next Steps
+
+- [Consensus](/docs/consensus) - Distributed consensus
+- [API Reference](/docs/api) - Complete API docs
+- [Architecture](/docs/architecture) - System design

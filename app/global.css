@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fd-primary: 142 76% 36%;
+  --fd-primary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --fd-primary: 142 71% 45%;
+  --fd-primary-foreground: 0 0% 0%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--fd-primary) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--fd-primary) / 0.5);
+}
+
+/* Code blocks */
+pre {
+  border: 1px solid hsl(var(--fd-border));
+}
+
+/* Accent link styles */
+.fd-toc a:hover,
+.fd-sidebar a:hover {
+  color: hsl(var(--fd-primary));
+}
