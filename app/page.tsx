@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, Code2, Cpu, Network, Shield, ArrowRight, Zap, Timer, Database, Globe, Server, Gauge, Layers, GitBranch, Terminal, Box, Workflow, Lock, Rocket } from 'lucide-react';
+import { BookOpen, Code2, Cpu, Network, Shield, ArrowRight, Zap, Timer, Database, Globe, Server, Gauge, Layers, GitBranch, Terminal, Box, Workflow, Lock, Rocket, MessageSquare, FileText, Users, Mail } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -24,12 +24,12 @@ export default function HomePage() {
           </p>
 
           <p className="text-xl text-fd-muted-foreground max-w-3xl mx-auto mb-4">
-            Zero-copy Application Protocol for the age of AI & crypto.
+            An insanely fast data interchange format and capability-based RPC system.
           </p>
 
           <p className="text-lg text-fd-muted-foreground max-w-2xl mx-auto mb-8">
             Think JSON, except binary. Think Protocol Buffers, except faster.
-            In benchmarks, ZAP is <span className="text-blue-400 font-bold">∞ times</span> faster.
+            In benchmarks, ZAP is <span className="text-blue-400 font-bold">INFINITY TIMES</span> faster.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -41,10 +41,10 @@ export default function HomePage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/docs/why-zap"
+              href="/docs/quick-start"
               className="inline-flex items-center gap-2 px-6 py-3 text-lg font-medium border border-fd-border rounded-lg hover:bg-fd-accent transition-colors"
             >
-              Why ZAP?
+              Installation
             </Link>
             <a
               href="https://github.com/zap-protocol"
@@ -67,7 +67,7 @@ export default function HomePage() {
                 <Gauge className="w-4 h-4" />
                 The Benchmark That Changed Everything
               </div>
-              <h2 className="text-3xl font-bold mb-6">Why ∞ times faster?</h2>
+              <h2 className="text-3xl font-bold mb-6">Why INFINITY times faster?</h2>
               <div className="space-y-4 text-fd-muted-foreground">
                 <p>
                   This benchmark is, of course, unfair. It only measures the time to encode and decode a message in memory.
@@ -76,11 +76,9 @@ export default function HomePage() {
                   ZAP gets a perfect score because <span className="text-blue-400 font-semibold">there is no encoding/decoding step</span>.
                 </p>
                 <p>
-                  The ZAP encoding works both as a <span className="text-white font-medium">data interchange format</span> AND
-                  an <span className="text-white font-medium">in-memory representation</span>.
-                </p>
-                <p className="text-white font-medium pt-2">
-                  No parsing. No serialization. Just data.
+                  The ZAP encoding is appropriate both as a <span className="text-white font-medium">data interchange format</span> AND
+                  an <span className="text-white font-medium">in-memory representation</span>, so once your structure is built,
+                  you can simply write the bytes straight out to disk!
                 </p>
                 <Link href="/docs/benchmarks" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors pt-2">
                   See all benchmarks <ArrowRight className="w-4 h-4" />
@@ -94,8 +92,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Real Benchmark Numbers */}
+      {/* Platform Independent Section */}
       <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Platform Independent</h2>
+          <p className="text-center text-fd-muted-foreground mb-12 max-w-3xl mx-auto">
+            The encoding is defined byte-for-byte independent of any platform. However, it is designed
+            to be efficiently manipulated on common modern CPUs.
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="p-6 bg-fd-card border border-fd-border rounded-lg text-center">
+              <div className="text-3xl mb-3">📐</div>
+              <h3 className="font-semibold mb-2">Struct-like Layout</h3>
+              <p className="text-sm text-fd-muted-foreground">Fixed widths, fixed offsets, proper alignment — just like a compiler would arrange it</p>
+            </div>
+            <div className="p-6 bg-fd-card border border-fd-border rounded-lg text-center">
+              <div className="text-3xl mb-3">🔗</div>
+              <h3 className="font-semibold mb-2">Pointer-based</h3>
+              <p className="text-sm text-fd-muted-foreground">Variable-sized elements embedded as offset pointers for position independence</p>
+            </div>
+            <div className="p-6 bg-fd-card border border-fd-border rounded-lg text-center">
+              <div className="text-3xl mb-3">📍</div>
+              <h3 className="font-semibold mb-2">Position Independent</h3>
+              <p className="text-sm text-fd-muted-foreground">Pointers are relative, not absolute — messages can live anywhere in memory</p>
+            </div>
+            <div className="p-6 bg-fd-card border border-fd-border rounded-lg text-center">
+              <div className="text-3xl mb-3">🔢</div>
+              <h3 className="font-semibold mb-2">Little-endian</h3>
+              <p className="text-sm text-fd-muted-foreground">Most CPUs are little-endian, and big-endian CPUs have conversion instructions</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Real Benchmark Numbers */}
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">Real Numbers. Real Impact.</h2>
           <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
@@ -161,12 +193,233 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Memory Section */}
-      <section className="px-6 py-20 bg-gradient-to-b from-fd-card to-fd-background border-y border-fd-border">
+      {/* Backwards Compatible Section */}
+      <section className="px-6 py-20">
         <div className="max-w-5xl mx-auto">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-green-400 bg-green-500/10 rounded-full">
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
+                <GitBranch className="w-4 h-4" />
+                Schema Evolution
+              </div>
+              <h2 className="text-3xl font-bold mb-6">Backwards Compatible</h2>
+              <div className="space-y-4 text-fd-muted-foreground">
+                <p>
+                  New fields are always added to the end of a struct (or replace padding space), so
+                  <span className="text-white font-medium"> existing field positions are unchanged</span>.
+                </p>
+                <p>
+                  The recipient simply needs to do a bounds check when reading each field.
+                </p>
+                <p>
+                  Fields are numbered in the order they were added, so ZAP always knows how to arrange
+                  them for <span className="text-blue-400 font-semibold">automatic backwards-compatibility</span>.
+                </p>
+              </div>
+            </div>
+            <div className="bg-fd-card border border-fd-border rounded-lg p-6">
+              <pre className="text-sm overflow-x-auto">
+                <code className="text-fd-muted-foreground">{`# Version 1
+struct User {
+  name  @0 :Text;
+  email @1 :Text;
+}
+
+# Version 2 - fully compatible!
+struct User {
+  name     @0 :Text;
+  email    @1 :Text;
+  phone    @2 :Text;     # New field
+  verified @3 :Bool;     # New field
+}`}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Smart Packing Section */}
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div className="order-2 lg:order-1">
+              <div className="space-y-4">
+                <div className="p-4 bg-fd-background border border-fd-border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-fd-muted-foreground">Unpacked ZAP</span>
+                    <span className="font-mono text-blue-400">1,024 bytes</span>
+                  </div>
+                  <div className="mt-2 h-2 bg-blue-500/20 rounded-full">
+                    <div className="h-full bg-blue-500 rounded-full" style={{width: '100%'}}></div>
+                  </div>
+                </div>
+                <div className="p-4 bg-fd-background border border-fd-border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-fd-muted-foreground">Protobuf</span>
+                    <span className="font-mono text-fd-muted-foreground">312 bytes</span>
+                  </div>
+                  <div className="mt-2 h-2 bg-fd-muted/20 rounded-full">
+                    <div className="h-full bg-fd-muted-foreground rounded-full" style={{width: '30.5%'}}></div>
+                  </div>
+                </div>
+                <div className="p-4 bg-fd-background border border-fd-border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-fd-muted-foreground">ZAP Packed</span>
+                    <span className="font-mono text-blue-400">287 bytes</span>
+                  </div>
+                  <div className="mt-2 h-2 bg-blue-500/20 rounded-full">
+                    <div className="h-full bg-blue-500 rounded-full" style={{width: '28%'}}></div>
+                  </div>
+                </div>
+                <p className="text-center text-sm text-fd-muted-foreground">
+                  ZAP packing: <span className="text-blue-400">smaller than protobuf</span> and still faster
+                </p>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
+                <Box className="w-4 h-4" />
+                Smart Compression
+              </div>
+              <h2 className="text-3xl font-bold mb-6">Doesn't fixed-width waste space?</h2>
+              <div className="space-y-4 text-fd-muted-foreground">
+                <p>
+                  Yes, fixed-width integers, unset optional fields, and padding do add zeros on the wire.
+                </p>
+                <p>
+                  However, since all these extra bytes are zeros, ZAP applies an
+                  <span className="text-blue-400 font-semibold"> extremely fast packing scheme</span> to remove them.
+                </p>
+                <p>
+                  ZAP packing achieves <span className="text-white font-medium">similar (better, even) message sizes</span> to
+                  protobuf encoding — and it's still faster.
+                </p>
+                <p className="text-sm">
+                  When bandwidth really matters, apply general-purpose compression (zlib, LZ4) on top of any format.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Security Section */}
+      <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
+                <Shield className="w-4 h-4" />
+                Security First
+              </div>
+              <h2 className="text-3xl font-bold mb-6">Isn't this horribly insecure?</h2>
+              <div className="space-y-4 text-fd-muted-foreground">
+                <p className="text-white font-semibold">
+                  No no no! To be clear, we're NOT just casting a buffer pointer to a struct pointer.
+                </p>
+                <p>
+                  ZAP generates classes with <span className="text-blue-400 font-semibold">accessor methods</span> that
+                  you use to traverse the message. These accessors <span className="text-white font-medium">validate pointers before following them</span>.
+                </p>
+                <p>
+                  If a pointer is invalid (e.g. out-of-bounds), the library can throw an exception or simply
+                  replace the value with a default / empty object — your choice.
+                </p>
+                <p>
+                  ZAP checks structural integrity just like any other serialization protocol.
+                  And just like any other protocol, it's up to the app to check content validity.
+                </p>
+              </div>
+            </div>
+            <div className="p-6 bg-fd-card border border-fd-border rounded-lg">
+              <h3 className="font-semibold mb-4 text-blue-400">Battle-Tested Security</h3>
+              <ul className="space-y-3 text-fd-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full" />
+                  <span>Powers <span className="text-white">Hanzo AI</span>'s distributed inference infrastructure</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full" />
+                  <span>Used in <span className="text-white">Lux Network</span>'s consensus layer</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full" />
+                  <span>Undergone <span className="text-white">fuzzing</span> and expert security review</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full" />
+                  <span>Environments where <span className="text-white">security is paramount</span></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Superpowers Section */}
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Superpowers</h2>
+          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
+            Are there other advantages? Glad you asked!
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <SuperpowerCard
+              icon={<Layers className="w-6 h-6 text-blue-500" />}
+              title="Incremental Reads"
+              description="Start processing a ZAP message before you have received all of it — outer objects appear entirely before inner objects."
+            />
+            <SuperpowerCard
+              icon={<Database className="w-6 h-6 text-blue-500" />}
+              title="Random Access"
+              description="Read just one field of a message without parsing the whole thing. Jump directly to the data you need."
+            />
+            <SuperpowerCard
+              icon={<FileText className="w-6 h-6 text-blue-500" />}
+              title="Memory Mapping"
+              description="Read a large ZAP file via mmap. The OS won't even read in the parts that you don't access."
+            />
+            <SuperpowerCard
+              icon={<Globe className="w-6 h-6 text-blue-500" />}
+              title="Inter-Language Communication"
+              description="Java, Python, C++, Rust — all can operate on the same in-memory data structure. No slow serialization between languages."
+            />
+            <SuperpowerCard
+              icon={<Server className="w-6 h-6 text-blue-500" />}
+              title="Inter-Process Communication"
+              description="Multiple processes share ZAP messages via shared memory. No kernel pipes. Process calls as fast as thread calls."
+            />
+            <SuperpowerCard
+              icon={<Box className="w-6 h-6 text-blue-500" />}
+              title="Arena Allocation"
+              description="ZAP objects are always allocated in an arena or region style — faster than scattered allocations and promotes cache locality."
+            />
+            <SuperpowerCard
+              icon={<Code2 className="w-6 h-6 text-blue-500" />}
+              title="Tiny Generated Code"
+              description="Usually no more than inline accessor methods! Order of magnitude smaller than protobuf's parsing/serialization code."
+            />
+            <SuperpowerCard
+              icon={<Zap className="w-6 h-6 text-blue-500" />}
+              title="Tiny Runtime Library"
+              description="Due to the simplicity of the ZAP format, the runtime library can be much smaller. Less code to ship, audit, and maintain."
+            />
+            <SuperpowerCard
+              icon={<Timer className="w-6 h-6 text-blue-500" />}
+              title="Time-Travel RPC"
+              description="ZAP's RPC system implements promise pipelining — call results return to clients before requests even arrive at the server!"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Memory Section */}
+      <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
                 <Database className="w-4 h-4" />
                 Memory Efficiency
               </div>
@@ -178,215 +431,60 @@ export default function HomePage() {
                 </p>
                 <p>
                   With ZAP routing through a single server?
-                  Just <span className="text-green-400 font-semibold">2.4 MB</span>.
+                  Just <span className="text-blue-400 font-semibold">2.4 MB</span>.
                 </p>
                 <p>
                   ZAP's arena allocation means <span className="text-white font-medium">zero heap allocations</span> per message.
                   No GC pressure. No fragmentation. Predictable latency.
                 </p>
                 <div className="pt-4 grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-fd-background/50 rounded-lg border border-fd-border">
+                  <div className="p-4 bg-fd-card rounded-lg border border-fd-border">
                     <div className="text-2xl font-bold text-red-400">17 allocs</div>
                     <div className="text-sm text-fd-muted-foreground">JSON per message</div>
                   </div>
-                  <div className="p-4 bg-fd-background/50 rounded-lg border border-fd-border">
-                    <div className="text-2xl font-bold text-green-400">0 allocs</div>
+                  <div className="p-4 bg-fd-card rounded-lg border border-fd-border">
+                    <div className="text-2xl font-bold text-blue-400">0 allocs</div>
                     <div className="text-sm text-fd-muted-foreground">ZAP per message</div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
-              <div className="p-6 bg-fd-background border border-fd-border rounded-lg">
+              <div className="p-6 bg-fd-card border border-fd-border rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-fd-muted-foreground">Claude Code (100 MCP)</span>
+                  <span className="text-fd-muted-foreground">Traditional (100 MCP)</span>
                   <span className="text-red-400 font-mono">825 MB</span>
                 </div>
                 <div className="h-4 bg-red-500/20 rounded-full overflow-hidden">
                   <div className="h-full bg-red-500 rounded-full" style={{width: '100%'}}></div>
                 </div>
               </div>
-              <div className="p-6 bg-fd-background border border-fd-border rounded-lg">
+              <div className="p-6 bg-fd-card border border-fd-border rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-fd-muted-foreground">Hanzo ZAP Router</span>
-                  <span className="text-green-400 font-mono">2.4 MB</span>
+                  <span className="text-fd-muted-foreground">ZAP Router</span>
+                  <span className="text-blue-400 font-mono">2.4 MB</span>
                 </div>
-                <div className="h-4 bg-green-500/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{width: '0.3%'}}></div>
+                <div className="h-4 bg-blue-500/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{width: '0.3%'}}></div>
                 </div>
               </div>
               <p className="text-center text-sm text-fd-muted-foreground pt-2">
-                Same 100 servers. <span className="text-green-400 font-semibold">341x less memory.</span>
+                Same 100 servers. <span className="text-blue-400 font-semibold">341x less memory.</span>
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Learning Path Section */}
-      <section className="px-6 py-20">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">Learn ZAP</h2>
-          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
-            From zero to production in four steps
-          </p>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <LearningCard
-              step={1}
-              icon={<BookOpen className="w-6 h-6" />}
-              title="Understand"
-              description="Learn why ZAP is infinitely faster and how zero-copy works"
-              href="/docs"
-            />
-            <LearningCard
-              step={2}
-              icon={<Code2 className="w-6 h-6" />}
-              title="Schema"
-              description="Define your data structures with the ZAP schema language"
-              href="/docs/schema"
-            />
-            <LearningCard
-              step={3}
-              icon={<Terminal className="w-6 h-6" />}
-              title="Generate"
-              description="Generate type-safe code for Go, Rust, TypeScript, or Python"
-              href="/docs/codegen"
-            />
-            <LearningCard
-              step={4}
-              icon={<Rocket className="w-6 h-6" />}
-              title="Deploy"
-              description="Build production services with the ZAP RPC system"
-              href="/docs/rpc"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Core Concepts Section */}
-      <section className="px-6 py-20 bg-fd-card">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
-          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
-            Platform-independent binary format designed for modern CPUs
-          </p>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <FeatureCard
-              icon={<Cpu className="w-8 h-8 text-blue-500" />}
-              title="Zero-Copy Access"
-              description="Data arranged like compiler structs — fixed widths, fixed offsets, proper alignment. No parsing overhead, no memory copies."
-            />
-            <FeatureCard
-              icon={<Globe className="w-8 h-8 text-blue-500" />}
-              title="Platform Independent"
-              description="Encoding is byte-for-byte identical across platforms. Pointers are offset-based for position independence. Little-endian for CPU efficiency."
-            />
-            <FeatureCard
-              icon={<GitBranch className="w-8 h-8 text-blue-500" />}
-              title="Backwards Compatible"
-              description="New fields always added to end of struct. Recipients do bounds checking. Field numbering maintains compatibility automatically."
-            />
-            <FeatureCard
-              icon={<Box className="w-8 h-8 text-blue-500" />}
-              title="Smart Packing"
-              description="Fixed-width integers and padding are zeros. ZAP's packing compression removes them, achieving better sizes than protobuf — and still faster."
-            />
-            <FeatureCard
-              icon={<Shield className="w-8 h-8 text-blue-500" />}
-              title="Security First"
-              description="Generated accessors validate all pointers before following. Out-of-bounds pointers throw or return defaults. Battle-tested in Cloudflare Workers."
-            />
-            <FeatureCard
-              icon={<Timer className="w-8 h-8 text-blue-500" />}
-              title="Time-Travel RPC"
-              description="ZAP's RPC system implements promise pipelining — call results return to clients before requests even arrive at the server."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="px-6 py-20">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Common Questions</h2>
-
-          <div className="space-y-8">
-            <FAQItem
-              question="Doesn't fixed-width data waste space on the wire?"
-              answer="Yes, but since all the extra bytes are zeros, ZAP's packing scheme removes them. It achieves similar (better, even) message sizes to protobuf encoding, and it's still faster. For bandwidth-critical paths, apply general compression (zlib, LZ4) on top."
-            />
-            <FAQItem
-              question="Isn't directly accessing binary data insecure?"
-              answer="ZAP does NOT just cast a buffer pointer to a struct pointer. It generates accessor methods that validate pointers before following them. Invalid pointers throw exceptions or return defaults. ZAP powers Hanzo AI's distributed inference and Lux Network's consensus layer — environments where security and performance are both paramount."
-            />
-            <FAQItem
-              question="How does backwards compatibility work?"
-              answer="New fields are always added to the end of a struct (or replace padding). Existing field positions never change. Recipients do bounds checking when reading. Fields are numbered by addition order, so ZAP always knows how to arrange them."
-            />
-            <FAQItem
-              question="What languages are supported?"
-              answer="ZAP has mature implementations for C++, Rust, Go, TypeScript/JavaScript, Python, Java, and C#. The schema language and wire format are language-agnostic."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Superpowers Section */}
-      <section className="px-6 py-20 bg-fd-card">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">Superpowers</h2>
-          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
-            Capabilities that other formats simply can't match
-          </p>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <SuperpowerCard
-              title="Incremental Reads"
-              description="Process messages before receiving all data"
-            />
-            <SuperpowerCard
-              title="Random Access"
-              description="Read one field without parsing everything"
-            />
-            <SuperpowerCard
-              title="Memory Mapping"
-              description="mmap large files, OS loads only what you touch"
-            />
-            <SuperpowerCard
-              title="Inter-Language"
-              description="Same in-memory structure across all languages"
-            />
-            <SuperpowerCard
-              title="Shared Memory IPC"
-              description="Process-to-process as fast as thread-to-thread"
-            />
-            <SuperpowerCard
-              title="Arena Allocation"
-              description="Faster allocation, better cache locality"
-            />
-            <SuperpowerCard
-              title="Tiny Codegen"
-              description="10x smaller than protobuf generated code"
-            />
-            <SuperpowerCard
-              title="Tiny Runtime"
-              description="Minimal library footprint"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Code Example Section */}
-      <section className="px-6 py-20">
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">Simple & Expressive</h2>
           <p className="text-center text-fd-muted-foreground mb-8">
             Define your schema once, generate clients for any language.
           </p>
 
-          <div className="bg-fd-card border border-fd-border rounded-lg overflow-hidden">
+          <div className="bg-fd-background border border-fd-border rounded-lg overflow-hidden">
             <div className="px-4 py-2 bg-fd-accent border-b border-fd-border">
               <span className="text-sm text-fd-muted-foreground">addressbook.zap</span>
             </div>
@@ -420,8 +518,79 @@ interface AddressBook {
         </div>
       </section>
 
+      {/* Learning Path Section */}
+      <section className="px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Get Started</h2>
+          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
+            From zero to production in four steps
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <LearningCard
+              step={1}
+              icon={<BookOpen className="w-6 h-6" />}
+              title="Introduction"
+              description="Learn why ZAP is infinitely faster and how zero-copy works"
+              href="/docs"
+            />
+            <LearningCard
+              step={2}
+              icon={<Code2 className="w-6 h-6" />}
+              title="Schema Language"
+              description="Define your data structures with the ZAP schema language"
+              href="/docs/protocol"
+            />
+            <LearningCard
+              step={3}
+              icon={<Terminal className="w-6 h-6" />}
+              title="Installation"
+              description="Install the ZAP tools and generate code for your language"
+              href="/docs/quick-start"
+            />
+            <LearningCard
+              step={4}
+              icon={<Rocket className="w-6 h-6" />}
+              title="RPC System"
+              description="Build production services with capability-based RPC"
+              href="/docs/api"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Common Questions</h2>
+
+          <div className="space-y-8">
+            <FAQItem
+              question="But doesn't that mean the encoding is platform-specific?"
+              answer="NO! The encoding is defined byte-for-byte independent of any platform. Data is arranged like a compiler would arrange a struct — with fixed widths, fixed offsets, and proper alignment. Variable-sized elements are embedded as pointers. Pointers are offset-based rather than absolute so that messages are position-independent."
+            />
+            <FAQItem
+              question="Won't fixed-width integers waste space on the wire?"
+              answer="Yes, fixed-width integers, unset optional fields, and padding do add zeros. However, ZAP applies an extremely fast packing scheme to remove them. ZAP packing achieves similar (better, even) message sizes to protobuf — and it's still faster. For bandwidth-critical paths, apply general compression (zlib, LZ4) on top."
+            />
+            <FAQItem
+              question="Isn't directly accessing binary data insecure?"
+              answer="To be clear: we're NOT just casting a buffer pointer to a struct pointer. ZAP generates classes with accessor methods that validate pointers before following them. Invalid pointers (out-of-bounds, etc.) throw exceptions or return defaults. ZAP checks structural integrity just like any other serialization protocol."
+            />
+            <FAQItem
+              question="How does backwards compatibility work?"
+              answer="New fields are always added to the end of a struct (or replace padding). Existing field positions never change. Recipients do bounds checking when reading. Fields are numbered by addition order, so ZAP always knows how to arrange them for compatibility."
+            />
+            <FAQItem
+              question="What languages are supported?"
+              answer="ZAP has implementations for C++, Rust, Go, TypeScript/JavaScript, Python, Java, and C#. The schema language and wire format are language-agnostic. Code generation produces type-safe bindings for your target language."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Trust Section */}
-      <section className="px-6 py-16 bg-fd-card border-y border-fd-border">
+      <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-4">Production Proven</h2>
           <p className="text-fd-muted-foreground max-w-2xl mx-auto mb-6">
@@ -447,7 +616,7 @@ interface AddressBook {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20">
+      <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to go infinitely faster?</h2>
           <p className="text-fd-muted-foreground mb-8">
@@ -463,12 +632,12 @@ interface AddressBook {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <a
-              href="https://twitter.com/AltZap"
+              href="https://github.com/zap-protocol"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 text-lg font-medium border border-fd-border rounded-lg hover:bg-fd-accent transition-colors"
             >
-              Follow @AltZap
+              View on GitHub
             </a>
           </div>
         </div>
@@ -476,30 +645,51 @@ interface AddressBook {
 
       {/* Footer */}
       <footer className="px-6 py-8 border-t border-fd-border">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl rotate-[-15deg] inline-block">⚡</span>
-            <span className="font-medium">ZAP Protocol</span>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-4 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xl rotate-[-15deg] inline-block">⚡</span>
+                <span className="font-bold">ZAP Protocol</span>
+              </div>
+              <p className="text-sm text-fd-muted-foreground">
+                Infinitely faster. Zero-copy Application Protocol for the age of AI & crypto.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Develop</h4>
+              <ul className="space-y-2 text-sm text-fd-muted-foreground">
+                <li><Link href="/docs" className="hover:text-fd-foreground transition-colors">Introduction</Link></li>
+                <li><Link href="/docs/quick-start" className="hover:text-fd-foreground transition-colors">Installation</Link></li>
+                <li><Link href="/docs/protocol" className="hover:text-fd-foreground transition-colors">Schema Language</Link></li>
+                <li><Link href="/docs/api" className="hover:text-fd-foreground transition-colors">RPC Protocol</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Community</h4>
+              <ul className="space-y-2 text-sm text-fd-muted-foreground">
+                <li><a href="https://github.com/zap-protocol" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">GitHub</a></li>
+                <li><a href="https://twitter.com/AltZap" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">Twitter</a></li>
+                <li><Link href="/docs/benchmarks" className="hover:text-fd-foreground transition-colors">Benchmarks</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Stay Updated</h4>
+              <p className="text-sm text-fd-muted-foreground mb-3">
+                Follow <a href="https://twitter.com/AltZap" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">@AltZap</a> for updates
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-fd-muted-foreground">
-            <a href="https://github.com/zap-protocol" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">
-              GitHub
-            </a>
-            <Link href="/docs" className="hover:text-fd-foreground transition-colors">
-              Docs
-            </Link>
-            <Link href="/docs/schema" className="hover:text-fd-foreground transition-colors">
-              Schema
-            </Link>
-            <Link href="/docs/rpc" className="hover:text-fd-foreground transition-colors">
-              RPC
-            </Link>
-            <Link href="/docs/api" className="hover:text-fd-foreground transition-colors">
-              API
-            </Link>
-            <a href="https://twitter.com/AltZap" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">
-              Twitter
-            </a>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-fd-border text-sm text-fd-muted-foreground">
+            <span>© 2025 ZAP Protocol</span>
+            <div className="flex items-center gap-6">
+              <a href="https://github.com/zap-protocol" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">
+                GitHub
+              </a>
+              <a href="https://twitter.com/AltZap" target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground transition-colors">
+                Twitter
+              </a>
+            </div>
           </div>
         </div>
       </footer>
@@ -507,7 +697,7 @@ interface AddressBook {
   );
 }
 
-function FeatureCard({
+function SuperpowerCard({
   icon,
   title,
   description,
@@ -519,8 +709,8 @@ function FeatureCard({
   return (
     <div className="p-6 bg-fd-background border border-fd-border rounded-lg">
       <div className="mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-fd-muted-foreground">{description}</p>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-fd-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -549,26 +739,6 @@ function LearningCard({
       <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-400 transition-colors">{title}</h3>
       <p className="text-sm text-fd-muted-foreground">{description}</p>
     </Link>
-  );
-}
-
-function SuperpowerCard({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="p-4 bg-fd-background border border-fd-border rounded-lg">
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full" />
-        <div>
-          <h3 className="font-semibold mb-1">{title}</h3>
-          <p className="text-sm text-fd-muted-foreground">{description}</p>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -605,7 +775,7 @@ function BenchmarkCard({
   allocsZap: string;
 }) {
   return (
-    <div className="p-6 bg-fd-card border border-fd-border rounded-lg hover:border-blue-500/30 transition-colors">
+    <div className="p-6 bg-fd-background border border-fd-border rounded-lg hover:border-blue-500/30 transition-colors">
       <h3 className="font-semibold mb-4">{title}</h3>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
@@ -618,7 +788,7 @@ function BenchmarkCard({
         <div className="flex justify-between items-center">
           <span className="text-sm text-fd-muted-foreground">ZAP</span>
           <div className="text-right">
-            <span className="font-mono text-green-400">{zapValue}</span>
+            <span className="font-mono text-blue-400">{zapValue}</span>
             <span className="text-xs text-fd-muted-foreground ml-2">({allocsZap})</span>
           </div>
         </div>
