@@ -1,6 +1,6 @@
 # ZAP Protocol Documentation
 
-Official documentation site for ZAP Protocol - Zero-latency Asynchronous Protocol.
+Official documentation site for ZAP - Zero-copy App Proto.
 
 ## Development
 
