@@ -14,7 +14,7 @@
     "@hanzo/docs-mdx": "^14.3.0",
     "@hanzo/docs-radix-ui": "^16.4.8",
     "@hanzo/docs-ui": "^16.4.8",
-    "@hanzo/ui": "^16.4.0",
+    "@hanzo/ui": "^5.3.34",
     "@tailwindcss/postcss": "^4.1.18",
     "lucide-react": "^0.468.0",
     "next": "^16.1.4",
