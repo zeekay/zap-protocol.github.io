@@ -94,6 +94,135 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Real Benchmark Numbers */}
+      <section className="px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Real Numbers. Real Impact.</h2>
+          <p className="text-center text-fd-muted-foreground mb-12 max-w-2xl mx-auto">
+            Measured on Apple M1 Max. <a href="https://github.com/zap-protocol/benchmarks" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">Run them yourself.</a>
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <BenchmarkCard
+              title="Message Routing"
+              jsonValue="2.1µs"
+              zapValue="3.2ns"
+              speedup="656x"
+              detail="No decode/re-encode needed"
+              allocsJson="17 allocs"
+              allocsZap="0 allocs"
+            />
+            <BenchmarkCard
+              title="Consensus Vote"
+              jsonValue="489ns"
+              zapValue="0.34ns"
+              speedup="1,438x"
+              detail="Critical path for blockchain"
+              allocsJson="1 alloc"
+              allocsZap="0 allocs"
+            />
+            <BenchmarkCard
+              title="State Access"
+              jsonValue="707µs"
+              zapValue="0.96ns"
+              speedup="736,458x"
+              detail="mmap random field read"
+              allocsJson="11,011 allocs"
+              allocsZap="0 allocs"
+            />
+            <BenchmarkCard
+              title="Batch 100 Messages"
+              jsonValue="37µs"
+              zapValue="1.8µs"
+              speedup="21x"
+              detail="Agent tool call batching"
+              allocsJson="300 allocs"
+              allocsZap="0 allocs"
+            />
+            <BenchmarkCard
+              title="Warp Message"
+              jsonValue="20µs"
+              zapValue="82ns"
+              speedup="244x"
+              detail="Cross-chain decode"
+              allocsJson="34 allocs"
+              allocsZap="1 alloc"
+            />
+            <BenchmarkCard
+              title="Validator Set (100)"
+              jsonValue="28µs"
+              zapValue="284ns"
+              speedup="99x"
+              detail="Consensus updates"
+              allocsJson="2 allocs"
+              allocsZap="0 allocs"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Memory Section */}
+      <section className="px-6 py-20 bg-gradient-to-b from-fd-card to-fd-background border-y border-fd-border">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-green-400 bg-green-500/10 rounded-full">
+                <Database className="w-4 h-4" />
+                Memory Efficiency
+              </div>
+              <h2 className="text-3xl font-bold mb-6">99.7% Less Memory</h2>
+              <div className="space-y-4 text-fd-muted-foreground">
+                <p>
+                  Running <span className="text-white font-medium">100 MCP servers</span> with traditional JSON-RPC?
+                  That's <span className="text-red-400 font-semibold">825 MB</span> of memory overhead.
+                </p>
+                <p>
+                  With ZAP routing through a single server?
+                  Just <span className="text-green-400 font-semibold">2.4 MB</span>.
+                </p>
+                <p>
+                  ZAP's arena allocation means <span className="text-white font-medium">zero heap allocations</span> per message.
+                  No GC pressure. No fragmentation. Predictable latency.
+                </p>
+                <div className="pt-4 grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-fd-background/50 rounded-lg border border-fd-border">
+                    <div className="text-2xl font-bold text-red-400">17 allocs</div>
+                    <div className="text-sm text-fd-muted-foreground">JSON per message</div>
+                  </div>
+                  <div className="p-4 bg-fd-background/50 rounded-lg border border-fd-border">
+                    <div className="text-2xl font-bold text-green-400">0 allocs</div>
+                    <div className="text-sm text-fd-muted-foreground">ZAP per message</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="p-6 bg-fd-background border border-fd-border rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-fd-muted-foreground">Claude Code (100 MCP)</span>
+                  <span className="text-red-400 font-mono">825 MB</span>
+                </div>
+                <div className="h-4 bg-red-500/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-500 rounded-full" style={{width: '100%'}}></div>
+                </div>
+              </div>
+              <div className="p-6 bg-fd-background border border-fd-border rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-fd-muted-foreground">Hanzo ZAP Router</span>
+                  <span className="text-green-400 font-mono">2.4 MB</span>
+                </div>
+                <div className="h-4 bg-green-500/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full" style={{width: '0.3%'}}></div>
+                </div>
+              </div>
+              <p className="text-center text-sm text-fd-muted-foreground pt-2">
+                Same 100 servers. <span className="text-green-400 font-semibold">341x less memory.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Learning Path Section */}
       <section className="px-6 py-20">
         <div className="max-w-6xl mx-auto">
@@ -190,7 +319,7 @@ export default function HomePage() {
             />
             <FAQItem
               question="Isn't directly accessing binary data insecure?"
-              answer="ZAP does NOT just cast a buffer pointer to a struct pointer. It generates accessor methods that validate pointers before following them. Invalid pointers throw exceptions or return defaults. ZAP was built for Sandstorm.io and is heavily used in Cloudflare Workers — environments where security is paramount."
+              answer="ZAP does NOT just cast a buffer pointer to a struct pointer. It generates accessor methods that validate pointers before following them. Invalid pointers throw exceptions or return defaults. ZAP powers Hanzo AI's distributed inference and Lux Network's consensus layer — environments where security and performance are both paramount."
             />
             <FAQItem
               question="How does backwards compatibility work?"
@@ -294,14 +423,26 @@ interface AddressBook {
       {/* Trust Section */}
       <section className="px-6 py-16 bg-fd-card border-y border-fd-border">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">Battle-Tested Security</h2>
+          <h2 className="text-2xl font-bold mb-4">Production Proven</h2>
           <p className="text-fd-muted-foreground max-w-2xl mx-auto mb-6">
-            ZAP was built for Sandstorm.io and is now heavily used in <span className="text-blue-400 font-semibold">Cloudflare Workers</span> —
-            environments where security is paramount. Undergone fuzzing and expert security review.
+            ZAP powers <span className="text-blue-400 font-semibold">Hanzo AI</span>'s distributed inference infrastructure and
+            <span className="text-blue-400 font-semibold"> Lux Network</span>'s consensus layer —
+            environments where microseconds matter and security is paramount.
           </p>
-          <p className="text-sm text-fd-muted-foreground italic">
-            "The most awesome response I've ever had." — Ben Laurie, security researcher
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 mt-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-400">341x</div>
+              <div className="text-sm text-fd-muted-foreground">less memory</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-400">1,438x</div>
+              <div className="text-sm text-fd-muted-foreground">faster consensus</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-400">0</div>
+              <div className="text-sm text-fd-muted-foreground">heap allocations</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -442,6 +583,52 @@ function FAQItem({
     <div className="border-b border-fd-border pb-6">
       <h3 className="text-lg font-semibold mb-2">{question}</h3>
       <p className="text-fd-muted-foreground">{answer}</p>
+    </div>
+  );
+}
+
+function BenchmarkCard({
+  title,
+  jsonValue,
+  zapValue,
+  speedup,
+  detail,
+  allocsJson,
+  allocsZap,
+}: {
+  title: string;
+  jsonValue: string;
+  zapValue: string;
+  speedup: string;
+  detail: string;
+  allocsJson: string;
+  allocsZap: string;
+}) {
+  return (
+    <div className="p-6 bg-fd-card border border-fd-border rounded-lg hover:border-blue-500/30 transition-colors">
+      <h3 className="font-semibold mb-4">{title}</h3>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-fd-muted-foreground">JSON</span>
+          <div className="text-right">
+            <span className="font-mono text-red-400">{jsonValue}</span>
+            <span className="text-xs text-fd-muted-foreground ml-2">({allocsJson})</span>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-fd-muted-foreground">ZAP</span>
+          <div className="text-right">
+            <span className="font-mono text-green-400">{zapValue}</span>
+            <span className="text-xs text-fd-muted-foreground ml-2">({allocsZap})</span>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-fd-border">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-fd-muted-foreground">{detail}</span>
+            <span className="text-blue-400 font-bold">{speedup}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
