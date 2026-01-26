@@ -60,27 +60,36 @@ export default function HomePage() {
 
       {/* The Story Section */}
       <section className="px-6 py-20 bg-fd-card border-y border-fd-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
-            <Gauge className="w-4 h-4" />
-            The Benchmark That Changed Everything
-          </div>
-          <h2 className="text-3xl font-bold mb-6">Why ∞ times faster?</h2>
-          <div className="space-y-4 text-fd-muted-foreground">
-            <p>
-              This benchmark is, of course, unfair. It only measures the time to encode and decode a message in memory.
-            </p>
-            <p>
-              ZAP gets a perfect score because <span className="text-blue-400 font-semibold">there is no encoding/decoding step</span>.
-            </p>
-            <p>
-              The ZAP encoding works both as a <span className="text-white font-medium">data interchange format</span> AND
-              an <span className="text-white font-medium">in-memory representation</span>.
-              Once your structure is built, you can simply write the bytes straight out to disk.
-            </p>
-            <p className="text-white font-medium pt-4">
-              No parsing. No serialization. Just data.
-            </p>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-blue-400 bg-blue-500/10 rounded-full">
+                <Gauge className="w-4 h-4" />
+                The Benchmark That Changed Everything
+              </div>
+              <h2 className="text-3xl font-bold mb-6">Why ∞ times faster?</h2>
+              <div className="space-y-4 text-fd-muted-foreground">
+                <p>
+                  This benchmark is, of course, unfair. It only measures the time to encode and decode a message in memory.
+                </p>
+                <p>
+                  ZAP gets a perfect score because <span className="text-blue-400 font-semibold">there is no encoding/decoding step</span>.
+                </p>
+                <p>
+                  The ZAP encoding works both as a <span className="text-white font-medium">data interchange format</span> AND
+                  an <span className="text-white font-medium">in-memory representation</span>.
+                </p>
+                <p className="text-white font-medium pt-2">
+                  No parsing. No serialization. Just data.
+                </p>
+                <Link href="/docs/benchmarks" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors pt-2">
+                  See all benchmarks <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <img src="/benchmark.svg" alt="ZAP vs Protobuf benchmark showing 156µs vs 0µs" className="w-full max-w-md rounded-lg" />
+            </div>
           </div>
         </div>
       </section>

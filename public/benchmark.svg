@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300" fill="none">
+  <!-- Background -->
+  <rect width="500" height="300" fill="#0a0a0a"/>
+
+  <!-- Y-axis label -->
+  <text x="20" y="150" fill="#888" font-family="system-ui, sans-serif" font-size="12" transform="rotate(-90, 20, 150)" text-anchor="middle">Encoding round-trip time</text>
+
+  <!-- X-axis line -->
+  <line x1="60" y1="250" x2="460" y2="250" stroke="#333" stroke-width="2"/>
+
+  <!-- Protobuf bar -->
+  <rect x="100" y="70" width="100" height="180" fill="#dc2626" rx="4"/>
+  <text x="150" y="55" fill="#fff" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">156µs</text>
+  <text x="150" y="275" fill="#888" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">Protobuf</text>
+
+  <!-- ZAP bar (tiny/zero) -->
+  <rect x="300" y="245" width="100" height="5" fill="#2563eb" rx="2"/>
+  <text x="350" y="235" fill="#fff" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">0µs</text>
+  <text x="350" y="275" fill="#3b82f6" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">ZAP</text>
+
+  <!-- Arrow -->
+  <path d="M 200 80 Q 280 40 340 120" stroke="#3b82f6" stroke-width="4" fill="none" marker-end="url(#arrowhead)"/>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+    </marker>
+  </defs>
+
+  <!-- Infinity faster text -->
+  <text x="420" y="150" fill="#3b82f6" font-family="system-ui, sans-serif" font-size="32" font-weight="bold" text-anchor="middle">∞%</text>
+  <text x="420" y="175" fill="#3b82f6" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">faster</text>
+</svg>
