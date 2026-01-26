@@ -4,9 +4,20 @@ import {
   DocsBody,
   DocsDescription,
   DocsTitle,
-} from 'fumadocs-ui/page';
+} from '@hanzo/docs-radix-ui/page';
 import { notFound } from 'next/navigation';
-import defaultMdxComponents from 'fumadocs-ui/mdx';
+import defaultMdxComponents from '@hanzo/docs-radix-ui/mdx';
+import { Tab, Tabs } from '@hanzo/docs-radix-ui/components/tabs';
+import type { MDXContent } from 'mdx/types';
+import type { TOCItemType } from '@hanzo/docs-core/toc';
+
+interface ExtendedPageData {
+  body: MDXContent;
+  toc: TOCItemType[];
+  full?: boolean;
+  title?: string;
+  description?: string;
+}
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -15,14 +26,15 @@ export default async function Page(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const MDX = page.data.body;
+  const data = page.data as ExtendedPageData;
+  const MDX = data.body;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+    <DocsPage toc={data.toc} full={data.full}>
+      <DocsTitle>{data.title}</DocsTitle>
+      <DocsDescription>{data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents }} />
+        <MDX components={{ ...defaultMdxComponents, Tab, Tabs }} />
       </DocsBody>
     </DocsPage>
   );
