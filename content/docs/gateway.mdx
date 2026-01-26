@@ -79,7 +79,7 @@ curl -X POST http://localhost:8080/Calculator/Add \
 
 Define custom routes in your schema:
 
-```capnp
+```text
 interface Calculator {
   add @0 (a :Float64, b :Float64) -> (result :Float64)
       $http(method = "GET", path = "/calc/add");
@@ -113,7 +113,7 @@ gateway := zap.NewGateway(server,
 
 Extract parameters from the URL path:
 
-```capnp
+```text
 interface Users {
   getUser @0 (id :Text) -> (user :User)
       $http(method = "GET", path = "/users/{id}");
@@ -127,7 +127,7 @@ interface Users {
 
 Map query parameters to method arguments:
 
-```capnp
+```text
 interface Search {
   search @0 (query :Text, limit :UInt32, offset :UInt32) -> (results :List(Result))
       $http(
@@ -164,7 +164,7 @@ ZAP automatically converts between JSON and Cap'n Proto:
 ### Example Conversions
 
 Cap'n Proto struct:
-```capnp
+```text
 struct User {
   id    @0 :UInt64;
   name  @1 :Text;
@@ -187,7 +187,7 @@ JSON representation:
 
 Use annotations for JSON field names:
 
-```capnp
+```text
 struct User {
   id        @0 :UInt64 $json(name = "user_id");
   firstName @1 :Text   $json(name = "first_name");
@@ -201,7 +201,7 @@ struct User {
 
 For streaming responses, use SSE:
 
-```capnp
+```text
 interface Feed {
   subscribe @0 (topic :Text) -> stream (event :Event)
       $http(method = "GET", path = "/feed/{topic}", stream = "sse");
@@ -221,7 +221,7 @@ eventSource.onmessage = (event) => {
 
 For bidirectional streaming:
 
-```capnp
+```text
 interface Chat {
   connect @0 stream (message :Message) -> stream (message :Message)
       $http(path = "/chat", stream = "websocket");

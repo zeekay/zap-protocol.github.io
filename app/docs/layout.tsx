@@ -1,12 +1,12 @@
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
+import { DocsLayout } from '@hanzo/docs-radix-ui/layouts/docs';
+import type { ReactNode } from 'react';
 import { Zap } from 'lucide-react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <DocsLayout
-      tree={source.pageTree}
+      tree={source.getPageTree()}
       nav={{
         title: (
           <div className="flex items-center gap-2">

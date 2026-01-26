@@ -201,7 +201,7 @@ ZAP automatically maps RPC methods to HTTP endpoints:
 
 Custom mappings via annotations:
 
-```capnp
+```text
 interface Calculator {
   add @0 (a :Float64, b :Float64) -> (result :Float64)
       $http(method = "GET", path = "/calc/add");
