@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+
+  <!-- Gradient overlay -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Icon -->
+  <rect x="480" y="140" width="120" height="120" rx="24" fill="#2563eb"/>
+  <text x="540" y="200" font-size="70" text-anchor="middle" dominant-baseline="central" transform="rotate(-15, 540, 200)">⚡</text>
+
+  <!-- ZAP text -->
+  <text x="620" y="220" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="bold" fill="#fff">ZAP</text>
+
+  <!-- Tagline -->
+  <text x="600" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#3b82f6" text-anchor="middle">Infinitely faster.</text>
+
+  <!-- Description -->
+  <text x="600" y="400" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#888" text-anchor="middle">Zero-copy Application Protocol</text>
+  <text x="600" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#888" text-anchor="middle">for the age of AI &amp; crypto</text>
+
+  <!-- Stats -->
+  <text x="300" y="550" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="bold" fill="#3b82f6" text-anchor="middle">656x</text>
+  <text x="300" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#666" text-anchor="middle">faster routing</text>
+
+  <text x="600" y="550" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="bold" fill="#3b82f6" text-anchor="middle">341x</text>
+  <text x="600" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#666" text-anchor="middle">less memory</text>
+
+  <text x="900" y="550" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="bold" fill="#3b82f6" text-anchor="middle">0</text>
+  <text x="900" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#666" text-anchor="middle">heap allocations</text>
+</svg>
