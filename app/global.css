@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@hanzo/docs-ui/css/colors/neutral.css';
+@import '@hanzo/docs-radix-ui/css/preset.css';
 
 :root {
   --fd-primary: 142 76% 36%;
@@ -8,6 +10,19 @@
 .dark {
   --fd-primary: 142 71% 45%;
   --fd-primary-foreground: 0 0% 0%;
+}
+
+@theme {
+  --color-fd-primary: hsl(142, 71%, 45%);
+  --color-fd-primary-foreground: black;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  background-color: var(--color-fd-background);
 }
 
 /* Custom scrollbar */
@@ -31,7 +46,7 @@
 
 /* Code blocks */
 pre {
-  border: 1px solid hsl(var(--fd-border));
+  border: 1px solid hsl(var(--color-fd-border));
 }
 
 /* Accent link styles */
