@@ -1,17 +1,17 @@
 ---
 title: Protocol
-description: Cap'n Proto schema design and message format for ZAP Protocol
+description: ZAP schema design and message format
 ---
 
 # Protocol
 
-ZAP uses Cap'n Proto for message serialization. This page covers schema design, best practices, and the wire format.
+ZAP uses a zero-copy binary format for message serialization. This page covers schema design, best practices, and the wire format.
 
-## Cap'n Proto Basics
+## ZAP Format Basics
 
-Cap'n Proto is a data serialization format that requires no parsing. Data is laid out in memory exactly as it appears on the wire.
+ZAP's data serialization format requires no parsing. Data is laid out in memory exactly as it appears on the wire.
 
-### Why Cap'n Proto?
+### Why Zero-Copy?
 
 | Feature | Benefit |
 |---------|---------|
@@ -24,9 +24,9 @@ Cap'n Proto is a data serialization format that requires no parsing. Data is lai
 
 ### Basic Types
 
-Cap'n Proto provides these primitive types:
+ZAP provides these primitive types:
 
-```text
+```proto
 struct Example {
   # Integers
   int8Val    @0 :Int8;
@@ -53,7 +53,7 @@ struct Example {
 
 Define complex types with structs:
 
-```text
+```proto
 struct Person {
   name     @0 :Text;
   age      @1 :Int32;
@@ -73,7 +73,7 @@ struct Address {
 
 Lists can contain any type:
 
-```text
+```proto
 struct Order {
   items      @0 :List(Item);
   quantities @1 :List(Int32);
@@ -85,7 +85,7 @@ struct Order {
 
 Define enumerated types:
 
-```text
+```proto
 enum Status {
   pending   @0;
   active    @1;
@@ -103,7 +103,7 @@ struct Task {
 
 Use unions for variant types:
 
-```text
+```proto
 struct Result {
   union {
     success @0 :Data;
@@ -124,7 +124,7 @@ struct Shape {
 
 ### Basic Interface
 
-```text
+```proto
 @0x85150b117366d14b;
 
 interface Calculator {
@@ -139,7 +139,7 @@ interface Calculator {
 
 Use `stream` keyword for streaming responses:
 
-```text
+```proto
 interface DataService {
   # Unary method
   getData @0 (id :Text) -> (data :Data);
@@ -159,7 +159,7 @@ interface DataService {
 
 Interfaces can return other interfaces:
 
-```text
+```proto
 interface Database {
   openTable @0 (name :Text) -> (table :Table);
 }
@@ -178,7 +178,7 @@ interface Table {
 
 Add new fields with new ordinals:
 
-```text
+```proto
 # Version 1
 struct User {
   name  @0 :Text;
@@ -198,7 +198,7 @@ struct User {
 
 Provide defaults for optional fields:
 
-```text
+```proto
 struct Config {
   timeout   @0 :UInt32 = 30;
   retries   @1 :UInt32 = 3;
@@ -210,11 +210,11 @@ struct Config {
 
 Mark fields as deprecated:
 
-```text
+```proto
 struct User {
   name     @0 :Text;
   email    @1 :Text;
-  oldField @2 :Text $deprecated;  # Don't use in new code
+  oldField @2 :Text @deprecated;  # Don't use in new code
 }
 ```
 
@@ -242,15 +242,20 @@ struct User {
 
 ### ZAP Header
 
-ZAP adds a 16-byte header before the Cap'n Proto message:
+ZAP adds a header before the message body:
 
 ```
 ┌───────────────────────────────────────────────────┐
-│ ZAP Header (16 bytes)                             │
+│ ZAP Header (40 bytes)                             │
 ├─────────────┬─────────────┬───────────────────────┤
-│ Message ID  │ Method ID   │ Flags                 │
-│ (8 bytes)   │ (4 bytes)   │ (4 bytes)             │
-└─────────────┴─────────────┴───────────────────────┘
+│ Magic       │ Version     │ Message ID            │
+│ (8 bytes)   │ (4 bytes)   │ (8 bytes)             │
+├─────────────┼─────────────┼───────────────────────┤
+│ Method ID   │ Flags       │ Payload Len           │
+│ (4 bytes)   │ (4 bytes)   │ (4 bytes)             │
+├─────────────┴─────────────┴───────────────────────┤
+│ Payload Pointer + Length (8 bytes)                │
+└───────────────────────────────────────────────────┘
 ```
 
 ### Compression
@@ -270,19 +275,19 @@ server := zap.NewServer(
 
 ```bash
 # Generate all languages
-zap generate schema.capnp --out=./gen
+zap generate schema.zap --out=./gen
 
 # Generate specific language
-zap generate schema.capnp --lang=go --out=./gen/go
-zap generate schema.capnp --lang=rust --out=./gen/rust
-zap generate schema.capnp --lang=ts --out=./gen/ts
+zap generate schema.zap --lang=go --out=./gen/go
+zap generate schema.zap --lang=rust --out=./gen/rust
+zap generate schema.zap --lang=ts --out=./gen/ts
 ```
 
 ### Generated Types
 
 For this schema:
 
-```text
+```proto
 struct Person {
   name @0 :Text;
   age  @1 :Int32;
@@ -293,7 +298,7 @@ Go generates:
 
 ```go
 type Person struct {
-    capnp.Struct
+    zap.Struct
 }
 
 func (p Person) Name() (string, error)
@@ -306,11 +311,11 @@ Rust generates:
 
 ```rust
 pub struct Person<'a> {
-    reader: capnp::struct_list::Reader<'a>,
+    reader: zap::StructReader<'a>,
 }
 
 impl<'a> Person<'a> {
-    pub fn get_name(&self) -> capnp::Result<&'a str>;
+    pub fn get_name(&self) -> zap::Result<&'a str>;
     pub fn get_age(&self) -> i32;
 }
 ```
@@ -321,7 +326,7 @@ impl<'a> Person<'a> {
 
 Field numbers are permanent. Plan for future expansion:
 
-```text
+```proto
 struct User {
   # Core fields: 0-9
   id    @0 :UInt64;
@@ -340,7 +345,7 @@ struct User {
 
 ### 2. Prefer Structs Over Lists of Primitives
 
-```text
+```proto
 # Avoid
 struct Point {
   coords @0 :List(Float64);  # What do indices mean?
@@ -356,7 +361,7 @@ struct Point {
 
 ### 3. Use Groups for Logical Organization
 
-```text
+```proto
 struct Employee {
   name @0 :Text;
 
@@ -375,7 +380,7 @@ struct Employee {
 
 ### 4. Document Your Schema
 
-```text
+```proto
 # User represents a registered user in the system.
 # Users are created via the Registration service and
 # authenticated via the Auth service.
