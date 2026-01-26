@@ -12,12 +12,12 @@ export const metadata = {
     default: 'ZAP Protocol',
     template: '%s | ZAP Protocol',
   },
-  description: 'Zero-latency Asynchronous Protocol - High-performance RPC framework with Cap\'n Proto serialization',
-  keywords: ['ZAP', 'RPC', 'protocol', 'Cap\'n Proto', 'async', 'distributed systems'],
+  description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
+  keywords: ['ZAP', 'RPC', 'protocol', 'Cap\'n Proto', 'AI', 'crypto', 'zero-copy', 'distributed systems'],
   authors: [{ name: 'ZAP Protocol' }],
   openGraph: {
     title: 'ZAP Protocol',
-    description: 'Zero-latency Asynchronous Protocol - High-performance RPC framework',
+    description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
     url: 'https://zap-protocol.github.io',
     siteName: 'ZAP Protocol',
     locale: 'en_US',
@@ -26,7 +26,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ZAP Protocol',
-    description: 'Zero-latency Asynchronous Protocol - High-performance RPC framework',
+    description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
   },
   robots: {
     index: true,

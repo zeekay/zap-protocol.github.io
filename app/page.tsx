@@ -20,12 +20,12 @@ export default function HomePage() {
           </div>
 
           <p className="text-xl text-fd-muted-foreground md:text-2xl mb-4">
-            Zero-latency Asynchronous Protocol
+            Zero-copy Application Protocol
           </p>
 
           <p className="text-lg text-fd-muted-foreground max-w-2xl mx-auto mb-8">
-            High-performance RPC framework with Cap'n Proto serialization,
-            multiple transport layers, and Byzantine fault-tolerant consensus.
+            Built for the age of AI & crypto. High-performance RPC with Cap'n Proto
+            serialization, zero-copy data access, and Byzantine fault-tolerant consensus.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
