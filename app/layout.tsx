@@ -12,12 +12,16 @@ export const metadata = {
     default: 'ZAP Protocol',
     template: '%s | ZAP Protocol',
   },
-  description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
-  keywords: ['ZAP', 'RPC', 'protocol', 'Cap\'n Proto', 'AI', 'crypto', 'zero-copy', 'distributed systems'],
+  description: 'Infinitely faster. Zero-copy Application Protocol for the age of AI & crypto.',
+  keywords: ['ZAP', 'RPC', 'protocol', 'Cap\'n Proto', 'AI', 'crypto', 'zero-copy', 'binary', 'serialization'],
   authors: [{ name: 'ZAP Protocol' }],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   openGraph: {
-    title: 'ZAP Protocol',
-    description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
+    title: 'ZAP Protocol ⚡',
+    description: 'Infinitely faster. Zero-copy Application Protocol for the age of AI & crypto.',
     url: 'https://zap-protocol.github.io',
     siteName: 'ZAP Protocol',
     locale: 'en_US',
@@ -25,8 +29,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ZAP Protocol',
-    description: 'Zero-copy Application Protocol - Built for the age of AI & crypto',
+    title: 'ZAP Protocol ⚡',
+    description: 'Infinitely faster. Zero-copy Application Protocol for the age of AI & crypto.',
+    creator: '@AltZap',
   },
   robots: {
     index: true,
