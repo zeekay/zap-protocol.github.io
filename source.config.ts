@@ -1,7 +1,18 @@
-import { defineDocs, defineConfig } from 'fumadocs-mdx/config';
+import { defineConfig, defineDocs, frontmatterSchema, metaSchema } from '@hanzo/docs-mdx/config';
 
-export const { docs, meta } = defineDocs({
+export const docs = defineDocs({
   dir: 'content/docs',
+  docs: {
+    schema: frontmatterSchema,
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
+  meta: {
+    schema: metaSchema,
+  },
 });
 
-export default defineConfig();
+export default defineConfig({
+  mdxOptions: {},
+});

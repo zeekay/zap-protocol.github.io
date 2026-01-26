@@ -26,7 +26,7 @@ Cap'n Proto is a data serialization format that requires no parsing. Data is lai
 
 Cap'n Proto provides these primitive types:
 
-```capnp
+```text
 struct Example {
   # Integers
   int8Val    @0 :Int8;
@@ -53,7 +53,7 @@ struct Example {
 
 Define complex types with structs:
 
-```capnp
+```text
 struct Person {
   name     @0 :Text;
   age      @1 :Int32;
@@ -73,7 +73,7 @@ struct Address {
 
 Lists can contain any type:
 
-```capnp
+```text
 struct Order {
   items      @0 :List(Item);
   quantities @1 :List(Int32);
@@ -85,7 +85,7 @@ struct Order {
 
 Define enumerated types:
 
-```capnp
+```text
 enum Status {
   pending   @0;
   active    @1;
@@ -103,7 +103,7 @@ struct Task {
 
 Use unions for variant types:
 
-```capnp
+```text
 struct Result {
   union {
     success @0 :Data;
@@ -124,7 +124,7 @@ struct Shape {
 
 ### Basic Interface
 
-```capnp
+```text
 @0x85150b117366d14b;
 
 interface Calculator {
@@ -139,7 +139,7 @@ interface Calculator {
 
 Use `stream` keyword for streaming responses:
 
-```capnp
+```text
 interface DataService {
   # Unary method
   getData @0 (id :Text) -> (data :Data);
@@ -159,7 +159,7 @@ interface DataService {
 
 Interfaces can return other interfaces:
 
-```capnp
+```text
 interface Database {
   openTable @0 (name :Text) -> (table :Table);
 }
@@ -178,7 +178,7 @@ interface Table {
 
 Add new fields with new ordinals:
 
-```capnp
+```text
 # Version 1
 struct User {
   name  @0 :Text;
@@ -198,7 +198,7 @@ struct User {
 
 Provide defaults for optional fields:
 
-```capnp
+```text
 struct Config {
   timeout   @0 :UInt32 = 30;
   retries   @1 :UInt32 = 3;
@@ -210,7 +210,7 @@ struct Config {
 
 Mark fields as deprecated:
 
-```capnp
+```text
 struct User {
   name     @0 :Text;
   email    @1 :Text;
@@ -282,7 +282,7 @@ zap generate schema.capnp --lang=ts --out=./gen/ts
 
 For this schema:
 
-```capnp
+```text
 struct Person {
   name @0 :Text;
   age  @1 :Int32;
@@ -321,7 +321,7 @@ impl<'a> Person<'a> {
 
 Field numbers are permanent. Plan for future expansion:
 
-```capnp
+```text
 struct User {
   # Core fields: 0-9
   id    @0 :UInt64;
@@ -340,7 +340,7 @@ struct User {
 
 ### 2. Prefer Structs Over Lists of Primitives
 
-```capnp
+```text
 # Avoid
 struct Point {
   coords @0 :List(Float64);  # What do indices mean?
@@ -356,7 +356,7 @@ struct Point {
 
 ### 3. Use Groups for Logical Organization
 
-```capnp
+```text
 struct Employee {
   name @0 :Text;
 
@@ -375,7 +375,7 @@ struct Employee {
 
 ### 4. Document Your Schema
 
-```capnp
+```text
 # User represents a registered user in the system.
 # Users are created via the Registration service and
 # authenticated via the Auth service.
