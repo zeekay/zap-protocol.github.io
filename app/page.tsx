@@ -232,7 +232,9 @@ struct User
   email Text
   phone Text       # New field
   verified Bool    # New field`}
-              capnpCode={`# Version 1
+              capnpCode={`@0x85150b117366d14b;  # file ID required
+
+# Version 1
 struct User {
   name  @0 :Text;
   email @1 :Text;
@@ -518,7 +520,7 @@ struct Person
 interface AddressBook
   lookup (id UInt64) -> (person Person)
   search (query Text) -> stream (person Person)`}
-            capnpCode={`# Cap'n Proto schema - traditional syntax
+            capnpCode={`@0xa1b2c3d4e5f6a7b8;  # file ID required
 
 struct Person {
   name      @0 :Text;
@@ -866,6 +868,10 @@ function CodeTabs({
     return code
       .split('\n')
       .map((line) => {
+        // File ID annotation
+        if (line.trim().startsWith('@0x')) {
+          return line.replace(/(@0x[a-f0-9]+;)(\s*#.*)?/i, '<span class="text-orange-400">$1</span><span class="text-emerald-400">$2</span>');
+        }
         // Comments
         if (line.trim().startsWith('#')) {
           return `<span class="text-emerald-400">${line}</span>`;
@@ -876,7 +882,8 @@ function CodeTabs({
           .replace(/:(\s*)(Text|Bool|Int8|Int16|Int32|Int64|UInt8|UInt16|UInt32|UInt64|Float32|Float64|Data|Void|Date)\b/g, ':<span class="text-cyan-400">$2</span>')
           .replace(/:(\s*)List\(/g, ':<span class="text-cyan-400">List</span>(')
           .replace(/@(\d+)/g, '<span class="text-yellow-400">@$1</span>')
-          .replace(/->/g, '<span class="text-yellow-400">-></span>');
+          .replace(/->/g, '<span class="text-yellow-400">-></span>')
+          .replace(/(#.*)$/, '<span class="text-emerald-400">$1</span>');
       })
       .join('\n');
   };
@@ -900,7 +907,7 @@ function CodeTabs({
                 : 'text-fd-muted-foreground hover:text-fd-foreground'
             }`}
           >
-            ZAP
+            .zap
           </button>
           <button
             onClick={() => setActiveTab('capnp')}
@@ -910,7 +917,7 @@ function CodeTabs({
                 : 'text-fd-muted-foreground hover:text-fd-foreground'
             }`}
           >
-            Cap'n Proto
+            .capnp
           </button>
         </div>
       </div>
