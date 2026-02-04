@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import { BookOpen, Code2, Cpu, Network, Shield, ArrowRight, Zap, Timer, Database, Globe, Server, Gauge, Layers, GitBranch, Terminal, Box, Workflow, Lock, Rocket, MessageSquare, FileText, Users, Mail } from 'lucide-react';
 
 export default function HomePage() {
@@ -217,9 +220,8 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="bg-fd-card border border-fd-border rounded-lg p-6">
-              <pre className="text-sm overflow-x-auto">
-                <code className="text-fd-muted-foreground">{`# Version 1
+            <CodeTabs
+              zapCode={`# Version 1
 struct User
   name Text
   email Text
@@ -229,9 +231,21 @@ struct User
   name Text
   email Text
   phone Text       # New field
-  verified Bool    # New field`}</code>
-              </pre>
-            </div>
+  verified Bool    # New field`}
+              capnpCode={`# Version 1
+struct User {
+  name  @0 :Text;
+  email @1 :Text;
+}
+
+# Version 2 - fully compatible!
+struct User {
+  name     @0 :Text;
+  email    @1 :Text;
+  phone    @2 :Text;     # New field
+  verified @3 :Bool;     # New field
+}`}
+            />
           </div>
         </div>
       </section>
@@ -482,12 +496,9 @@ struct User
             Define your schema once, generate clients for any language.
           </p>
 
-          <div className="bg-fd-background border border-fd-border rounded-lg overflow-hidden">
-            <div className="px-4 py-2 bg-fd-accent border-b border-fd-border">
-              <span className="text-sm text-fd-muted-foreground">addressbook.zap</span>
-            </div>
-            <pre className="p-4 overflow-x-auto text-sm">
-              <code>{`# ZAP schema - clean, whitespace-significant syntax
+          <CodeTabs
+            filename="addressbook.zap"
+            zapCode={`# ZAP schema - clean, whitespace-significant syntax
 
 struct Person
   name Text
@@ -506,9 +517,32 @@ struct Person
 
 interface AddressBook
   lookup (id UInt64) -> (person Person)
-  search (query Text) -> stream (person Person)`}</code>
-            </pre>
-          </div>
+  search (query Text) -> stream (person Person)`}
+            capnpCode={`# Cap'n Proto schema - traditional syntax
+
+struct Person {
+  name      @0 :Text;
+  email     @1 :Text;
+  birthdate @2 :Date;
+  phones    @3 :List(PhoneNumber);
+
+  struct PhoneNumber {
+    number @0 :Text;
+    type   @1 :PhoneType;
+
+    enum PhoneType {
+      mobile @0;
+      home   @1;
+      work   @2;
+    }
+  }
+}
+
+interface AddressBook {
+  lookup @0 (id :UInt64) -> (person :Person);
+  search @1 (query :Text) -> stream (person :Person);
+}`}
+          />
         </div>
       </section>
 
@@ -793,6 +827,96 @@ function BenchmarkCard({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CodeTabs({
+  zapCode,
+  capnpCode,
+  filename,
+}: {
+  zapCode: string;
+  capnpCode: string;
+  filename?: string;
+}) {
+  const [activeTab, setActiveTab] = useState<'zap' | 'capnp'>('zap');
+
+  // Syntax highlighting for ZAP (whitespace-significant)
+  const highlightZap = (code: string) => {
+    return code
+      .split('\n')
+      .map((line) => {
+        // Comments
+        if (line.trim().startsWith('#')) {
+          return `<span class="text-emerald-400">${line}</span>`;
+        }
+        // Keywords
+        return line
+          .replace(/\b(struct|interface|enum|union|stream)\b/g, '<span class="text-purple-400 font-semibold">$1</span>')
+          .replace(/\b(Text|Bool|Int8|Int16|Int32|Int64|UInt8|UInt16|UInt32|UInt64|Float32|Float64|Data|Void|Date)\b/g, '<span class="text-cyan-400">$1</span>')
+          .replace(/\bList\(/g, '<span class="text-cyan-400">List</span>(')
+          .replace(/->/g, '<span class="text-yellow-400">-></span>');
+      })
+      .join('\n');
+  };
+
+  // Syntax highlighting for Cap'n Proto (traditional)
+  const highlightCapnp = (code: string) => {
+    return code
+      .split('\n')
+      .map((line) => {
+        // Comments
+        if (line.trim().startsWith('#')) {
+          return `<span class="text-emerald-400">${line}</span>`;
+        }
+        // Keywords and syntax
+        return line
+          .replace(/\b(struct|interface|enum|union|stream)\b/g, '<span class="text-purple-400 font-semibold">$1</span>')
+          .replace(/:(\s*)(Text|Bool|Int8|Int16|Int32|Int64|UInt8|UInt16|UInt32|UInt64|Float32|Float64|Data|Void|Date)\b/g, ':<span class="text-cyan-400">$2</span>')
+          .replace(/:(\s*)List\(/g, ':<span class="text-cyan-400">List</span>(')
+          .replace(/@(\d+)/g, '<span class="text-yellow-400">@$1</span>')
+          .replace(/->/g, '<span class="text-yellow-400">-></span>');
+      })
+      .join('\n');
+  };
+
+  const code = activeTab === 'zap' ? zapCode : capnpCode;
+  const highlighted = activeTab === 'zap' ? highlightZap(code) : highlightCapnp(code);
+
+  return (
+    <div className="bg-fd-background border border-fd-border rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-fd-accent border-b border-fd-border">
+        {filename && (
+          <span className="text-sm text-fd-muted-foreground">{filename}</span>
+        )}
+        {!filename && <span />}
+        <div className="flex gap-1 bg-fd-background rounded-md p-1">
+          <button
+            onClick={() => setActiveTab('zap')}
+            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+              activeTab === 'zap'
+                ? 'bg-blue-600 text-white'
+                : 'text-fd-muted-foreground hover:text-fd-foreground'
+            }`}
+          >
+            ZAP
+          </button>
+          <button
+            onClick={() => setActiveTab('capnp')}
+            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+              activeTab === 'capnp'
+                ? 'bg-fd-muted text-fd-foreground'
+                : 'text-fd-muted-foreground hover:text-fd-foreground'
+            }`}
+          >
+            Cap'n Proto
+          </button>
+        </div>
+      </div>
+      <pre className="p-4 overflow-x-auto text-sm">
+        <code dangerouslySetInnerHTML={{ __html: highlighted }} />
+      </pre>
     </div>
   );
 }
