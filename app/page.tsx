@@ -220,18 +220,16 @@ export default function HomePage() {
             <div className="bg-fd-card border border-fd-border rounded-lg p-6">
               <pre className="text-sm overflow-x-auto">
                 <code className="text-fd-muted-foreground">{`# Version 1
-struct User {
-  name  @0 :Text;
-  email @1 :Text;
-}
+struct User
+  name Text
+  email Text
 
 # Version 2 - fully compatible!
-struct User {
-  name     @0 :Text;
-  email    @1 :Text;
-  phone    @2 :Text;     # New field
-  verified @3 :Bool;     # New field
-}`}</code>
+struct User
+  name Text
+  email Text
+  phone Text       # New field
+  verified Bool    # New field`}</code>
               </pre>
             </div>
           </div>
@@ -489,30 +487,26 @@ struct User {
               <span className="text-sm text-fd-muted-foreground">addressbook.zap</span>
             </div>
             <pre className="p-4 overflow-x-auto text-sm">
-              <code>{`@0xabcd1234abcd1234;
+              <code>{`# ZAP schema - clean, whitespace-significant syntax
 
-struct Person {
-  name @0 :Text;
-  birthdate @3 :Date;  # Fields numbered by addition order
-  email @1 :Text;      # for backwards compatibility
-  phones @2 :List(PhoneNumber);
-}
+struct Person
+  name Text
+  email Text
+  birthdate Date
+  phones List(PhoneNumber)
 
-struct PhoneNumber {
-  number @0 :Text;
-  type @1 :PhoneType;
-}
+  struct PhoneNumber
+    number Text
+    type PhoneType
 
-enum PhoneType {
-  mobile @0;
-  home @1;
-  work @2;
-}
+    enum PhoneType
+      mobile
+      home
+      work
 
-interface AddressBook {
-  lookup @0 (id :UInt64) -> (person :Person);
-  search @1 (query :Text) -> stream (person :Person);
-}`}</code>
+interface AddressBook
+  lookup (id UInt64) -> (person Person)
+  search (query Text) -> stream (person Person)`}</code>
             </pre>
           </div>
         </div>
