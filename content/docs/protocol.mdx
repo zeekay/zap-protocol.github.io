@@ -26,7 +26,28 @@ ZAP's data serialization format requires no parsing. Data is laid out in memory 
 
 ZAP provides these primitive types:
 
-```proto
+<SchemaTabs
+  zap={`struct Example
+  # Integers
+  int8Val Int8
+  int16Val Int16
+  int32Val Int32
+  int64Val Int64
+  uint8Val UInt8
+  uint16Val UInt16
+  uint32Val UInt32
+  uint64Val UInt64
+
+  # Floating point
+  float32Val Float32
+  float64Val Float64
+
+  # Other primitives
+  boolVal Bool
+  textVal Text
+  dataVal Data`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Example {
   # Integers
   int8Val    @0 :Int8;
@@ -46,14 +67,27 @@ struct Example {
   boolVal    @10 :Bool;
   textVal    @11 :Text;
   dataVal    @12 :Data;
-}
-```
+}`}
+/>
 
 ### Structs
 
 Define complex types with structs:
 
-```proto
+<SchemaTabs
+  zap={`struct Person
+  name Text
+  age Int32
+  email Text
+  address Address
+
+struct Address
+  street Text
+  city Text
+  country Text
+  zipCode Text`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Person {
   name     @0 :Text;
   age      @1 :Int32;
@@ -66,26 +100,43 @@ struct Address {
   city     @1 :Text;
   country  @2 :Text;
   zipCode  @3 :Text;
-}
-```
+}`}
+/>
 
 ### Lists
 
 Lists can contain any type:
 
-```proto
+<SchemaTabs
+  zap={`struct Order
+  items List(Item)
+  quantities List(Int32)
+  tags List(Text)`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Order {
   items      @0 :List(Item);
   quantities @1 :List(Int32);
   tags       @2 :List(Text);
-}
-```
+}`}
+/>
 
 ### Enums
 
 Define enumerated types:
 
-```proto
+<SchemaTabs
+  zap={`enum Status
+  pending
+  active
+  completed
+  cancelled
+
+struct Task
+  title Text
+  status Status`}
+  capnp={`@0xabcd1234;  # file ID required
+
 enum Status {
   pending   @0;
   active    @1;
@@ -96,14 +147,26 @@ enum Status {
 struct Task {
   title  @0 :Text;
   status @1 :Status;
-}
-```
+}`}
+/>
 
 ### Unions
 
 Use unions for variant types:
 
-```proto
+<SchemaTabs
+  zap={`struct Result
+  union
+    success Data
+    error Text
+
+struct Shape
+  union
+    circle Circle
+    rectangle Rectangle
+    triangle Triangle`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Result {
   union {
     success @0 :Data;
@@ -117,29 +180,48 @@ struct Shape {
     rectangle @1 :Rectangle;
     triangle  @2 :Triangle;
   }
-}
-```
+}`}
+/>
 
 ## Interface Definitions
 
 ### Basic Interface
 
-```proto
-@0x85150b117366d14b;
+<SchemaTabs
+  zap={`interface Calculator
+  add (a Float64, b Float64) -> (result Float64)
+  subtract (a Float64, b Float64) -> (result Float64)
+  multiply (a Float64, b Float64) -> (result Float64)
+  divide (a Float64, b Float64) -> (result Float64)`}
+  capnp={`@0x85150b117366d14b;  # file ID required
 
 interface Calculator {
   add      @0 (a :Float64, b :Float64) -> (result :Float64);
   subtract @1 (a :Float64, b :Float64) -> (result :Float64);
   multiply @2 (a :Float64, b :Float64) -> (result :Float64);
   divide   @3 (a :Float64, b :Float64) -> (result :Float64);
-}
-```
+}`}
+/>
 
 ### Streaming Methods
 
 Use `stream` keyword for streaming responses:
 
-```proto
+<SchemaTabs
+  zap={`interface DataService
+  # Unary method
+  getData (id Text) -> (data Data)
+
+  # Server streaming
+  streamData (query Query) -> stream (chunk DataChunk)
+
+  # Client streaming
+  uploadData stream (chunk DataChunk) -> (status UploadStatus)
+
+  # Bidirectional streaming
+  processStream stream (input InputChunk) -> stream (output OutputChunk)`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface DataService {
   # Unary method
   getData @0 (id :Text) -> (data :Data);
@@ -152,14 +234,24 @@ interface DataService {
 
   # Bidirectional streaming
   processStream @3 stream (input :InputChunk) -> stream (output :OutputChunk);
-}
-```
+}`}
+/>
 
 ### Nested Interfaces
 
 Interfaces can return other interfaces:
 
-```proto
+<SchemaTabs
+  zap={`interface Database
+  openTable (name Text) -> (table Table)
+
+interface Table
+  get (key Data) -> (value Data)
+  put (key Data, value Data) -> ()
+  delete (key Data) -> ()
+  scan (prefix Data) -> stream (entry Entry)`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Database {
   openTable @0 (name :Text) -> (table :Table);
 }
@@ -169,8 +261,8 @@ interface Table {
   put    @1 (key :Data, value :Data) -> ();
   delete @2 (key :Data) -> ();
   scan   @3 (prefix :Data) -> stream (entry :Entry);
-}
-```
+}`}
+/>
 
 ## Schema Evolution
 
@@ -178,7 +270,20 @@ interface Table {
 
 Add new fields with new ordinals:
 
-```proto
+<SchemaTabs
+  zap={`# Version 1
+struct User
+  name Text
+  email Text
+
+# Version 2 (compatible)
+struct User
+  name Text
+  email Text
+  phone Text       # New field
+  verified Bool    # New field`}
+  capnp={`@0xabcd1234;  # file ID required
+
 # Version 1
 struct User {
   name  @0 :Text;
@@ -191,32 +296,44 @@ struct User {
   email    @1 :Text;
   phone    @2 :Text;     # New field
   verified @3 :Bool;     # New field
-}
-```
+}`}
+/>
 
 ### Default Values
 
 Provide defaults for optional fields:
 
-```proto
+<SchemaTabs
+  zap={`struct Config
+  timeout UInt32 = 30
+  retries UInt32 = 3
+  debugMode Bool = false`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Config {
   timeout   @0 :UInt32 = 30;
   retries   @1 :UInt32 = 3;
   debugMode @2 :Bool = false;
-}
-```
+}`}
+/>
 
 ### Deprecation
 
 Mark fields as deprecated:
 
-```proto
+<SchemaTabs
+  zap={`struct User
+  name Text
+  email Text
+  oldField Text $deprecated  # Don't use in new code`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct User {
   name     @0 :Text;
   email    @1 :Text;
   oldField @2 :Text @deprecated;  # Don't use in new code
-}
-```
+}`}
+/>
 
 ## Wire Format
 
@@ -287,12 +404,17 @@ zap generate schema.zap --lang=ts --out=./gen/ts
 
 For this schema:
 
-```proto
+<SchemaTabs
+  zap={`struct Person
+  name Text
+  age Int32`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Person {
   name @0 :Text;
   age  @1 :Int32;
-}
-```
+}`}
+/>
 
 Go generates:
 
@@ -326,7 +448,22 @@ impl<'a> Person<'a> {
 
 Field numbers are permanent. Plan for future expansion:
 
-```proto
+<SchemaTabs
+  zap={`struct User
+  # Core fields: 0-9
+  id UInt64
+  name Text
+  email Text
+
+  # Profile fields: 10-19
+  avatar Data
+  bio Text
+
+  # Settings: 20-29
+  theme Text
+  language Text`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct User {
   # Core fields: 0-9
   id    @0 :UInt64;
@@ -340,12 +477,23 @@ struct User {
   # Settings: 20-29
   theme     @20 :Text;
   language  @21 :Text;
-}
-```
+}`}
+/>
 
 ### 2. Prefer Structs Over Lists of Primitives
 
-```proto
+<SchemaTabs
+  zap={`# Avoid
+struct Point
+  coords List(Float64)  # What do indices mean?
+
+# Prefer
+struct Point
+  x Float64
+  y Float64
+  z Float64`}
+  capnp={`@0xabcd1234;  # file ID required
+
 # Avoid
 struct Point {
   coords @0 :List(Float64);  # What do indices mean?
@@ -356,12 +504,25 @@ struct Point {
   x @0 :Float64;
   y @1 :Float64;
   z @2 :Float64;
-}
-```
+}`}
+/>
 
 ### 3. Use Groups for Logical Organization
 
-```proto
+<SchemaTabs
+  zap={`struct Employee
+  name Text
+
+  contact group
+    email Text
+    phone Text
+
+  employment group
+    title Text
+    department Text
+    startDate UInt64`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct Employee {
   name @0 :Text;
 
@@ -375,12 +536,26 @@ struct Employee {
     department @4 :Text;
     startDate  @5 :UInt64;
   }
-}
-```
+}`}
+/>
 
 ### 4. Document Your Schema
 
-```proto
+<SchemaTabs
+  zap={`# User represents a registered user in the system.
+# Users are created via the Registration service and
+# authenticated via the Auth service.
+struct User
+  # Unique identifier, assigned by the system
+  id UInt64
+
+  # Display name, must be 1-100 characters
+  name Text
+
+  # Email address, must be unique across all users
+  email Text`}
+  capnp={`@0xabcd1234;  # file ID required
+
 # User represents a registered user in the system.
 # Users are created via the Registration service and
 # authenticated via the Auth service.
@@ -393,8 +568,8 @@ struct User {
 
   # Email address, must be unique across all users
   email @2 :Text;
-}
-```
+}`}
+/>
 
 ## Next Steps
 

@@ -79,8 +79,17 @@ ZAP's RPC system implements promise pipelining — call results return to client
 
 Define your schema:
 
-```proto
-@0xa1b2c3d4e5f6a7b8;
+<SchemaTabs
+  zap={`struct Person
+  name Text
+  birthdate Date  # Field numbers = addition order
+  email Text      # for backwards compatibility
+  phones List(PhoneNumber)
+
+interface AddressBook
+  lookup (id UInt64) -> (person Person)
+  search (query Text) -> stream (person Person)`}
+  capnp={`@0xa1b2c3d4e5f6a7b8;  # file ID required
 
 struct Person {
   name @0 :Text;
@@ -92,8 +101,8 @@ struct Person {
 interface AddressBook {
   lookup @0 (id :UInt64) -> (person :Person);
   search @1 (query :Text) -> stream (person :Person);
-}
-```
+}`}
+/>
 
 Generate and implement your server (Go):
 

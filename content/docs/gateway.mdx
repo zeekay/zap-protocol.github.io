@@ -79,7 +79,25 @@ curl -X POST http://localhost:8080/Calculator/Add \
 
 Define custom routes in your schema:
 
-```text
+<SchemaTabs
+  zap={`interface Calculator
+  add (a Float64, b Float64) -> (result Float64)
+    $http(method = "GET", path = "/calc/add")
+
+  subtract (a Float64, b Float64) -> (result Float64)
+    $http(method = "GET", path = "/calc/subtract")
+
+interface Users
+  getUser (id Text) -> (user User)
+    $http(method = "GET", path = "/users/{id}")
+
+  createUser (user User) -> (id Text)
+    $http(method = "POST", path = "/users")
+
+  deleteUser (id Text) -> ()
+    $http(method = "DELETE", path = "/users/{id}")`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Calculator {
   add @0 (a :Float64, b :Float64) -> (result :Float64)
       $http(method = "GET", path = "/calc/add");
@@ -97,8 +115,8 @@ interface Users {
 
   deleteUser @2 (id :Text) -> ()
       $http(method = "DELETE", path = "/users/{id}");
-}
-```
+}`}
+/>
 
 ### Programmatic Routes
 
@@ -113,21 +131,38 @@ gateway := zap.NewGateway(server,
 
 Extract parameters from the URL path:
 
-```text
+<SchemaTabs
+  zap={`interface Users
+  getUser (id Text) -> (user User)
+    $http(method = "GET", path = "/users/{id}")
+
+  getPost (userId Text, postId Text) -> (post Post)
+    $http(method = "GET", path = "/users/{userId}/posts/{postId}")`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Users {
   getUser @0 (id :Text) -> (user :User)
       $http(method = "GET", path = "/users/{id}");
 
   getPost @1 (userId :Text, postId :Text) -> (post :Post)
       $http(method = "GET", path = "/users/{userId}/posts/{postId}");
-}
-```
+}`}
+/>
 
 ### Query Parameters
 
 Map query parameters to method arguments:
 
-```text
+<SchemaTabs
+  zap={`interface Search
+  search (query Text, limit UInt32, offset UInt32) -> (results List(Result))
+    $http(
+      method = "GET",
+      path = "/search",
+      query = ["query", "limit", "offset"]
+    )`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Search {
   search @0 (query :Text, limit :UInt32, offset :UInt32) -> (results :List(Result))
       $http(
@@ -135,8 +170,8 @@ interface Search {
         path = "/search",
         query = ["query", "limit", "offset"]
       );
-}
-```
+}`}
+/>
 
 Usage:
 ```bash
@@ -163,15 +198,21 @@ ZAP automatically converts between JSON and Cap'n Proto:
 
 ### Example Conversions
 
-Cap'n Proto struct:
-```text
+<SchemaTabs
+  zap={`struct User
+  id    UInt64
+  name  Text
+  email Text
+  roles List(Text)`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct User {
   id    @0 :UInt64;
   name  @1 :Text;
   email @2 :Text;
   roles @3 :List(Text);
-}
-```
+}`}
+/>
 
 JSON representation:
 ```json
@@ -187,13 +228,19 @@ JSON representation:
 
 Use annotations for JSON field names:
 
-```text
+<SchemaTabs
+  zap={`struct User
+  id        UInt64 $json(name = "user_id")
+  firstName Text   $json(name = "first_name")
+  lastName  Text   $json(name = "last_name")`}
+  capnp={`@0xabcd1234;  # file ID required
+
 struct User {
   id        @0 :UInt64 $json(name = "user_id");
   firstName @1 :Text   $json(name = "first_name");
   lastName  @2 :Text   $json(name = "last_name");
-}
-```
+}`}
+/>
 
 ## Streaming
 
@@ -201,12 +248,17 @@ struct User {
 
 For streaming responses, use SSE:
 
-```text
+<SchemaTabs
+  zap={`interface Feed
+  subscribe (topic Text) -> stream (event Event)
+    $http(method = "GET", path = "/feed/{topic}", stream = "sse")`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Feed {
   subscribe @0 (topic :Text) -> stream (event :Event)
       $http(method = "GET", path = "/feed/{topic}", stream = "sse");
-}
-```
+}`}
+/>
 
 Client usage:
 ```javascript
@@ -221,12 +273,17 @@ eventSource.onmessage = (event) => {
 
 For bidirectional streaming:
 
-```text
+<SchemaTabs
+  zap={`interface Chat
+  connect stream (message Message) -> stream (message Message)
+    $http(path = "/chat", stream = "websocket")`}
+  capnp={`@0xabcd1234;  # file ID required
+
 interface Chat {
   connect @0 stream (message :Message) -> stream (message :Message)
       $http(path = "/chat", stream = "websocket");
-}
-```
+}`}
+/>
 
 Client usage:
 ```javascript
