@@ -43,10 +43,22 @@ pnpm add @zap-protocol/client @zap-protocol/codegen
 
 ## Define Your Schema
 
-Create a file named `calculator.zap`:
+Create a file named `calculator.zap` (or `calculator.capnp` for legacy Cap'n Proto format):
 
-```proto
-@0x85150b117366d14b;
+<SchemaTabs
+  filename="calculator.zap"
+  zap={`# ZAP schema - no file ID needed, no ordinals
+
+interface Calculator
+  # Basic arithmetic operations
+  add (a Float64, b Float64) -> (result Float64)
+  subtract (a Float64, b Float64) -> (result Float64)
+  multiply (a Float64, b Float64) -> (result Float64)
+  divide (a Float64, b Float64) -> (result Float64)
+
+  # Batch operations with streaming
+  sum (numbers List(Float64)) -> (total Float64)`}
+  capnp={`@0x85150b117366d14b;  # file ID required
 
 interface Calculator {
   # Basic arithmetic operations
@@ -57,8 +69,8 @@ interface Calculator {
 
   # Batch operations with streaming
   sum @4 (numbers :List(Float64)) -> (total :Float64);
-}
-```
+}`}
+/>
 
 ## Generate Code
 

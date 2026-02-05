@@ -8,6 +8,7 @@ import {
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from '@hanzo/docs-radix-ui/mdx';
 import { Tab, Tabs } from '@hanzo/docs-radix-ui/components/tabs';
+import { SchemaTabs } from '@/components/schema-tabs';
 import type { MDXContent } from 'mdx/types';
 import type { TOCItemType } from '@hanzo/docs-core/toc';
 
@@ -34,7 +35,7 @@ export default async function Page(props: {
       <DocsTitle>{data.title}</DocsTitle>
       <DocsDescription>{data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Tab, Tabs }} />
+        <MDX components={{ ...defaultMdxComponents, Tab, Tabs, SchemaTabs }} />
       </DocsBody>
     </DocsPage>
   );
